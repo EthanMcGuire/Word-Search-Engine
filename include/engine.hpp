@@ -5,6 +5,7 @@
 
 #include <SDL3/SDL.h>
 
+class GameController;
 class AudioController;
 
 class Engine
@@ -33,9 +34,13 @@ class Engine
 
         SDL_Window *window = NULL;
         SDL_Renderer *renderer = NULL;
+
+        GameController *gameController = NULL;
         AudioController *audioController = NULL;
         
         bool gameRunning;
+
+        float fps;
 };
 
 #endif

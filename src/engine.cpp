@@ -1,10 +1,13 @@
 #include "engine.hpp"
 #include "config.hpp"
 #include "audioController.hpp"
+#include "gameController.hpp"
+#include "timer.hpp"
 
 Engine::Engine()
 {
     audioController = new AudioController();
+    gameController = new GameController(this);
 }
 
 Engine::~Engine()
@@ -39,20 +42,56 @@ bool Engine::initializeEngine()
 /// @brief Runs the games main loop. Processes events by calling handleEvents().
 void Engine::mainLoop()
 {
+    Timer fpsTimer;
+    Timer fpsCapTimer;
+    float avgFPS;
+    int countedFrames = 0;
+
+    Uint64 currentTime = SDL_GetPerformanceCounter();
+    Uint64 previousTime = 0;
+    double deltaTime = 0;
+
     gameRunning = true;
+
+    fpsTimer.start();
+
+    //REMOVE ME
+    gameController->startGame();
 
     while (gameRunning)
     {
+        fpsCapTimer.start();
+
+        //Calculate delta time in seconds
+        previousTime = currentTime;
+        currentTime = SDL_GetPerformanceCounter();
+
+        deltaTime = (double) ( (currentTime - previousTime) * 1000 / (double) SDL_GetPerformanceFrequency());
+        deltaTime *= 0.001;
+
+        //Cap delta time to the frame rate if it gets too big
+        deltaTime = std::min(deltaTime, 1.0 / (double) Config::FPS);
+
+        //Calculate FPS
+        avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
+
+        if (avgFPS > 2000000)
+        {
+            avgFPS = 0;
+        }
+
+        fps = avgFPS;
+
         handleEvents();
 
-        audioController->update();
+        #pragma region Update
 
-        const double now = ((double)SDL_GetTicks()) / 1000.0;  /* convert from milliseconds to seconds. */
-        /* choose the color for the frame we will draw. The sine wave trick makes it fade between colors smoothly. */
-        const float red = (float) (0.5 + 0.5 * SDL_sin(now));
-        const float green = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 2 / 3));
-        const float blue = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 4 / 3));
-        SDL_SetRenderDrawColorFloat(renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);  /* new color, full alpha. */
+        audioController->update();
+        gameController->update(deltaTime);
+
+        #pragma endregion Update
+
+        #pragma region Draw
 
         /* clear the window to the draw color. */
         SDL_RenderClear(renderer);
@@ -60,8 +99,17 @@ void Engine::mainLoop()
         /* put the newly-cleared rendering on the screen. */
         SDL_RenderPresent(renderer);
 
-        //TODO
-        SDL_Delay(16);
+        #pragma endregion Draw
+
+        //Cap frame rate
+        int frameTicks = fpsCapTimer.getTicks();
+
+        if (frameTicks < Config::TICKS_PER_FRAME)
+        {
+            SDL_Delay(Config::TICKS_PER_FRAME - frameTicks);
+        }
+
+        countedFrames++;
     }
 }
 

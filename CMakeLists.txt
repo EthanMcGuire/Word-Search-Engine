@@ -11,6 +11,9 @@ target_sources(MyProgram
         src/fileUtils.cpp
         src/dateUtils.cpp
         src/audioController.cpp
+        src/timer.cpp
+        src/countdownTimer.cpp
+        src/gameController.cpp
 
     PUBLIC
         FILE_SET HEADERS
@@ -23,6 +26,9 @@ target_sources(MyProgram
             include/fileUtils.hpp
             include/dateUtils.hpp
             include/audioController.hpp
+            include/timer.hpp
+            include/countdownTimer.hpp
+            include/gameController.hpp
 )
 
 find_package(SDL3 REQUIRED)

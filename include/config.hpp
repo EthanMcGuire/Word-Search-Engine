@@ -14,6 +14,7 @@ namespace Config
     static const int SCREEN_HEIGHT = 360;
 
     static const int FPS = 60;
+    static const int TICKS_PER_FRAME = 1000 / FPS;
 };
 
 #endif

@@ -7,7 +7,6 @@
 #include "config.hpp"
 #include "dateUtils.hpp"
 #include "fileUtils.hpp"
-#include "audioController.hpp"
 
 Engine *engine;
 
@@ -30,7 +29,7 @@ int main(int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
     
-    (engine->getAudioController())->playMusic(MUSIC_SOURCE_MUSIC_1);
+    //(engine->getAudioController())->playMusic(MUSIC_SOURCE_MUSIC_1);
 
     engine->mainLoop();
 
