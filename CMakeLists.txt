@@ -32,4 +32,6 @@ target_sources(MyProgram
 )
 
 find_package(SDL3 REQUIRED)
-target_link_libraries(MyProgram SDL3::SDL3)
+find_package(SDL3_image REQUIRED)
+find_package(SDL3_ttf REQUIRED)
+target_link_libraries(MyProgram SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf SDL3::SDL3)

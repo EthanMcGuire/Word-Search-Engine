@@ -13,7 +13,16 @@ Engine::Engine()
 Engine::~Engine()
 {
     delete audioController;
+
+    delete gameController;
+    
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+
     audioController = NULL;
+    gameController = NULL;
+    renderer = NULL;
+    window = NULL;
 }
 
 /// @brief Initializes the window and renderer.
