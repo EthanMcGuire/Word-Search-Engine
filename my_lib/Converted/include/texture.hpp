@@ -3,7 +3,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <SDL_render.h>
+#include <SDL3/SDL_render.h>
 #include <string>
 
 class Texture
@@ -15,10 +15,8 @@ class Texture
         /// @brief Loads the given image file into a surface which is then loaded into a texture.
         /// @param renderer The renderer the texture will be created for.
         /// @param path Image file path.
-        /// @param useColorKey Whether to use a color key.
-        /// @param colorKey The color key color.
         /// @return True on success.
-        bool loadTexture(SDL_Renderer *renderer, std::string path, bool useColorKey = false, SDL_Color colorKey = {255, 255, 255});
+        bool loadTexture(SDL_Renderer *renderer, std::string path);
 
         /// @brief Frees the current texture.
         void freeTexture();
@@ -36,7 +34,7 @@ class Texture
         /// @param angle Image rotation angle.
         /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
         /// @param flip Whether to flip the texture horizontally or vertically.
-        void render(SDL_Renderer *renderer, int x, int y, double xScale = 1.0, double yScale = 1.0, SDL_Rect *clip = NULL, double angle = 0.0, SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE) const;
+        void render(SDL_Renderer *renderer, int x, int y, double xScale = 1.0, double yScale = 1.0, SDL_FRect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_FlipMode flip = SDL_FLIP_NONE) const;
 
         /// @brief Renders the texture to the given renderer.
         /// @param renderer The renderer to render to.
@@ -48,7 +46,7 @@ class Texture
         /// @param angle Image rotation angle.
         /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
         /// @param flip Whether to flip the texture horizontally or vertically.
-        void renderStretched(SDL_Renderer *renderer, int x, int y, int drawWidth, int drawHeight, SDL_Rect *clip = NULL, double angle = 0.0, SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE) const;
+        void renderStretched(SDL_Renderer *renderer, int x, int y, int drawWidth, int drawHeight, SDL_FRect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_FlipMode flip = SDL_FLIP_NONE) const;
 
         #pragma region Setters
 

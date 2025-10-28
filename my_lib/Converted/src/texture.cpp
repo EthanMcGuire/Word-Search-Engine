@@ -1,5 +1,5 @@
 #include "texture.hpp"
-#include <SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 Texture::Texture()
 {
@@ -16,10 +16,8 @@ Texture::~Texture()
 /// @brief Loads the given image file into a surface which is then loaded into a texture.
 /// @param renderer The renderer the texture will be created for.
 /// @param path Image file path.
-/// @param useColorKey Whether to use a color key.
-/// @param colorKey The color key color.
 /// @return True on success.
-bool Texture::loadTexture(SDL_Renderer *renderer, std::string path, bool useColorKey, SDL_Color colorKey)
+bool Texture::loadTexture(SDL_Renderer *renderer, std::string path)
 {
     SDL_Surface *surface;
     
@@ -33,15 +31,9 @@ bool Texture::loadTexture(SDL_Renderer *renderer, std::string path, bool useColo
 
     if (surface == NULL)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Texture: Unable to load image %s! Error: %s", path.c_str(), IMG_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Texture: Unable to load image %s! Error: %s", path.c_str(), SDL_GetError());
 
         return false;
-    }
-
-    //Set the color key (The color will be rendered transparent)
-    if (useColorKey)
-    {
-        SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, colorKey.r, colorKey.g, colorKey.b));
     }
 
     //Load the texture
@@ -57,7 +49,7 @@ bool Texture::loadTexture(SDL_Renderer *renderer, std::string path, bool useColo
         height = surface->h;
     }
 
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 
     if (texture != NULL)
     {
@@ -98,7 +90,7 @@ bool Texture::textureLoaded() const
 /// @param angle Image rotation angle.
 /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
 /// @param flip Whether the flip the texture horizontally or vertically.
-void Texture::render(SDL_Renderer *renderer, int x, int y, double xScale, double yScale, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip) const
+void Texture::render(SDL_Renderer *renderer, int x, int y, double xScale, double yScale, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const
 {
     if (texture == NULL)
     {
@@ -107,7 +99,7 @@ void Texture::render(SDL_Renderer *renderer, int x, int y, double xScale, double
         return;
     }
 
-    SDL_Rect renderQuad = {x, y, width, height};
+    SDL_FRect renderQuad = {x, y, width, height};
 
     if (clip != NULL)
     {
@@ -120,7 +112,7 @@ void Texture::render(SDL_Renderer *renderer, int x, int y, double xScale, double
     renderQuad.h *= yScale;
 
     //Render the texture
-    SDL_RenderCopyEx(renderer, texture, clip, &renderQuad, angle, center, flip);
+    SDL_RenderTextureRotated(renderer, texture, clip, &renderQuad, angle, center, flip);
 }
 
 /// @brief Renders the texture to the given renderer.
@@ -133,7 +125,7 @@ void Texture::render(SDL_Renderer *renderer, int x, int y, double xScale, double
 /// @param angle Image rotation angle.
 /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
 /// @param flip Whether the flip the texture horizontally or vertically.
-void Texture::renderStretched(SDL_Renderer *renderer, int x, int y, int drawWidth, int drawHeight, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip) const
+void Texture::renderStretched(SDL_Renderer *renderer, int x, int y, int drawWidth, int drawHeight, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const
 {
     if (texture == NULL)
     {
@@ -142,10 +134,10 @@ void Texture::renderStretched(SDL_Renderer *renderer, int x, int y, int drawWidt
         return;
     }
 
-    SDL_Rect renderQuad = {x, y, drawWidth, drawHeight};
+    SDL_FRect renderQuad = {x, y, drawWidth, drawHeight};
 
     //Render the texture
-    SDL_RenderCopyEx(renderer, texture, clip, &renderQuad, angle, center, flip);
+    SDL_RenderTextureRotated(renderer, texture, clip, &renderQuad, angle, center, flip);
 }
 
 #pragma region Setters

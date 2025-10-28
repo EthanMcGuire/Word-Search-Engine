@@ -31,6 +31,15 @@ target_sources(MyProgram
             include/gameController.hpp
 )
 
+# Copy assets to build directory
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/assets" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
+# Copy SDL libaries to build directory
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3_ttf.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3_image.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+
+# Build lib
 find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
 find_package(SDL3_ttf REQUIRED)
