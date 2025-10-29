@@ -3,7 +3,7 @@
 #ifndef TEXT_INPUT_HANDLER_H
 #define TEXT_INPUT_HANDLER_H
 
-#include <SDL_events.h>
+#include <SDL3/SDL_events.h>
 #include <string>
 #include <queue>
 

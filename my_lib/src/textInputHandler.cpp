@@ -1,9 +1,9 @@
 #include "textInputHandler.hpp"
 #include "gameManager.hpp"
 #include "eventDispatcher.hpp"
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 #include <cassert>
-#include <SDL_clipboard.h>
+#include <SDL3/SDL_clipboard.h>
 
 TextInputHandler::TextInputHandler(GameManager *gameManager, std::string defaultText, int maxCharacters)
 {

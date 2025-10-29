@@ -24,8 +24,6 @@ bool Texture::loadTexture(SDL_Renderer *renderer, std::string path)
     //Free previous texture
     freeTexture();
 
-    //CAN ALSO DO IMG_LoadTexture
-
     //Load the image into a surface
     surface = IMG_Load(path.c_str());
 

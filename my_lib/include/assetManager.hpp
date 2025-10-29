@@ -6,9 +6,8 @@
 #include "json_fwd.hpp"
 #include "spriteAtlas.hpp"
 #include "bitmapFont.hpp"
-#include <SDL_render.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <unordered_map>
 #include <string>
 

@@ -14,6 +14,7 @@ target_sources(MyProgram
         src/timer.cpp
         src/countdownTimer.cpp
         src/gameController.cpp
+        src/stringUtils.cpp
 
     PUBLIC
         FILE_SET HEADERS
@@ -29,6 +30,7 @@ target_sources(MyProgram
             include/timer.hpp
             include/countdownTimer.hpp
             include/gameController.hpp
+            include/stringUtils.hpp
 )
 
 # Copy assets to build directory
