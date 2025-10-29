@@ -2,11 +2,11 @@
 #include "random.hpp"
 #include "texture.hpp"
 #include "spriteAtlas.hpp"
-#include "json.hpp"
+#include "json/json.hpp"
 #include "jsonUtils.hpp"
 #include "stringUtils.hpp"
 #include <fstream>
-#include <SDL_log.h>
+#include <SDL3/SDL_log.h>
 
 using json = nlohmann::json;
 

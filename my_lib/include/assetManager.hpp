@@ -3,7 +3,7 @@
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
-#include "json_fwd.hpp"
+#include "json/json_fwd.hpp"
 #include "spriteAtlas.hpp"
 #include "bitmapFont.hpp"
 #include <SDL3/SDL_render.h>
@@ -16,14 +16,20 @@ using json = nlohmann::json;
 class Engine;
 class Random;
 
+//TODO
+//FIX MUSIC AND SOUND
+//Maybe I can have them separated still?
+    //The thing is, they all use the same Sound struct now. But maybe since I have them split up in different arrays, I can group them by types?
+    //Can also use a map to map string to sound resource when accessing these assets. Good ideas!
+
 enum AssetType
 {
     TEXTURE,
     ATLAS,
     MUSIC,
     SOUND,
-    FONT,   //For TTF fonts
-    BITMAP_FONT, //Bitmap fonts
+    FONT,           //For TTF fonts
+    BITMAP_FONT,    //Bitmap fonts
     ASSET_TYPE_COUNT
 };
 
