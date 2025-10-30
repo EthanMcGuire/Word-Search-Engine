@@ -1,26 +1,26 @@
 #include "engine.hpp"
 #include "config.hpp"
 #include "audioController.hpp"
-#include "gameController.hpp"
+#include "gameManager.hpp"
 #include "timer.hpp"
 
 Engine::Engine()
 {
     audioController = new AudioController();
-    gameController = new GameController(this);
+    gameManager = new GameManager(this);
 }
 
 Engine::~Engine()
 {
     delete audioController;
 
-    delete gameController;
+    delete gameManager;
     
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
     audioController = NULL;
-    gameController = NULL;
+    gameManager = NULL;
     renderer = NULL;
     window = NULL;
 }
@@ -65,7 +65,7 @@ void Engine::mainLoop()
     fpsTimer.start();
 
     //REMOVE ME
-    gameController->startGame();
+    gameManager->startGame();
 
     while (gameRunning)
     {
@@ -96,7 +96,7 @@ void Engine::mainLoop()
         #pragma region Update
 
         audioController->update();
-        gameController->update(deltaTime);
+        gameManager->update(deltaTime);
 
         #pragma endregion Update
 

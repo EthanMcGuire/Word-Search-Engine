@@ -3,9 +3,9 @@
 #ifndef ROOM_H
 #define ROOM_H
 
-#include "json.hpp"
-#include "parameterVariant.hpp"
-#include <SDL_render.h>
+#include "json/json.hpp"
+//#include "parameterVariant.hpp"
+#include <SDL3/SDL_render.h>
 #include <string>
 #include <vector>
 
@@ -20,7 +20,7 @@ struct ObjectInfo
 {
     std::string objectName;
     int x, y;
-    std::vector<ParameterVariant> parameters;
+    //std::vector<ParameterVariant> parameters;
 };
 
 struct RoomInfo
@@ -41,8 +41,6 @@ struct RoomInfo
     bool tileBackground;
 
     std::vector<ObjectInfo> objects;    //Room game objects
-
-    std::string tilemap;    //Tilemap file name
 };
 
 /// @brief Custom from_json method to deserialize JSON into RoomInfo.
@@ -55,14 +53,16 @@ void from_json(const json& j, RoomInfo& roomInfo);
 /// @param roomInfo The struct to populate.
 void from_json(const json& j, ObjectInfo& objectInfo);
 
+/*
 /// @brief Converts the json to a possible variant value.
 /// @param j The json containing the variant.
 /// @param return The variant value.
 /// @throws invalid_argument If the Json is an invalid argument.
 ParameterVariant jsonToParameter(const json& j);
+*/
 
 /// @brief Defines a room in the game. 
-///        This includes the x and y coordinate range for the player and the camera, the game objects, the tilemap, and the background colors/textures.
+///        This includes the x and y coordinate range for the player and the camera, the game objects, and the background colors/textures.
 class Room
 {
     public:
@@ -85,7 +85,8 @@ class Room
         void clearBackgroundTexture();
 
         /// @brief Updates the background scrolling.
-        void updateBackground();
+        /// @param deltaTime The time in seconds since the last frame.
+        void updateBackground(double deltaTime);
 
         /// @brief Draws the background.
         /// @param renderer The renderer to draw to.
@@ -162,9 +163,6 @@ class Room
 
         /// @return The list of objects that should be created for this room.
         std::vector<ObjectInfo> getRoomObjects();
-
-        /// @return The name of the TileMap for this room, or "" if this room has no map.
-        std::string getTileMapName();
         
         #pragma endregion Getters
 
@@ -192,15 +190,15 @@ class Room
 
         //These only apply for a tiled background
         float bgXOffset, bgYOffset;
-        float bgScrollSpeedX, bgScrollSpeedY;
+        float bgScrollSpeedX, bgScrollSpeedY;   //Speed per second (delta time)
 
         double bgScaleX, bgScaleY;
 
         //Objects
         std::vector<ObjectInfo> objects;
 
-        //Tilemap file name
-        std::string tilemap;
+        //TODO
+        //Add music? Or in the JSON file, a music file name can be given. If given, play upon starting the room.
 };
 
 #endif

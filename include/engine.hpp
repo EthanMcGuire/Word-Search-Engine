@@ -5,7 +5,7 @@
 
 #include <SDL3/SDL.h>
 
-class GameController;
+class GameManager;
 class AudioController;
 
 class Engine
@@ -35,7 +35,7 @@ class Engine
         SDL_Window *window = NULL;
         SDL_Renderer *renderer = NULL;
 
-        GameController *gameController = NULL;
+        GameManager *gameManager = NULL;
         AudioController *audioController = NULL;
         
         bool gameRunning;

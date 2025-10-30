@@ -15,6 +15,8 @@ namespace Config
 
     static const int FPS = 60;
     static const int TICKS_PER_FRAME = 1000 / FPS;
+
+    static const std::string ROOM_PATH = "assets\\data\\rooms"; 
 };
 
 #endif

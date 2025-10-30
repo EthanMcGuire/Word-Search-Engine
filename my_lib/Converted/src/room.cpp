@@ -1,12 +1,12 @@
 #include "room.hpp"
 #include "camera.hpp"
 #include "texture.hpp"
-#include "json.hpp"
+#include "json/json.hpp"
 #include "jsonUtils.hpp"
 #include "stringUtils.hpp"
 #include "config.hpp"
 #include "assetManager.hpp"
-#include <SDL_log.h>
+#include <SDL3/SDL_log.h>
 
 using json = nlohmann::json;
 
@@ -39,9 +39,8 @@ void from_json(const json& j, RoomInfo& roomInfo)
     j.at("tileBackground").get_to(roomInfo.tileBackground);
 
     roomInfo.objects = j.at("objects").get<std::vector<ObjectInfo>>();
-
-    j.at("tilemap").get_to(roomInfo.tilemap);
 }
+
 
 /// @brief Custom from_json method to deserialize JSON into ObjectInfo.
 /// @param j The json containing our struct values.
@@ -54,6 +53,7 @@ void from_json(const json& j, ObjectInfo& objectInfo)
     j.at("x").get_to(objectInfo.x);
     j.at("y").get_to(objectInfo.y);
 
+    /*
     //Get the object parameters
     if (!j["parameters"].is_array())
     {
@@ -64,8 +64,10 @@ void from_json(const json& j, ObjectInfo& objectInfo)
     {
         objectInfo.parameters.push_back(jsonToParameter(item));
     }
+    */
 }
 
+/*
 /// @brief Converts the json to a possible variant value.
 /// @param j The json containing the variant.
 /// @param return The variant value.
@@ -89,6 +91,7 @@ ParameterVariant jsonToParameter(const json& j)
         throw std::invalid_argument("Room: Unsupported JSON type for conversion to ParameterVariant.");
     }
 }
+*/
 
 Room::Room(AssetManager* assetManager, std::string roomName, int roomWidth, int roomHeight)
 {
@@ -116,8 +119,6 @@ Room::Room(AssetManager* assetManager, std::string roomName, int roomWidth, int 
     
     bgScaleX = 1.0;
     bgScaleY = 1.0;
-
-    tilemap = "";
 }
 
 /// @brief Loads a room using the given room name. Searches for a room JSON file of the same name.
@@ -158,7 +159,7 @@ bool Room::loadRoomByName(std::string roomName)
     return true;
 }
 
-/// @brief Loads a tilemap from a json string.
+/// @brief Loads room data from a json string.
 /// @param str The json string to parse.
 /// @return True on success, false otherwise.
 bool Room::loadRoomFromString(std::string str)
@@ -239,7 +240,6 @@ bool Room::loadRoomFromJson(json roomJson)
     bgScaleY = roomInfo.bgScaleY;
 
     objects = roomInfo.objects;
-    tilemap = roomInfo.tilemap;
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Room: Loaded room %s", name.c_str());
 
@@ -273,8 +273,6 @@ void Room::clearRoom()
     bgScaleY = 1.0;
 
     objects.clear();
-
-    tilemap = "";
 }
 
 /// @brief Clears the background texture by setting it to NULL.
@@ -284,7 +282,8 @@ void Room::clearBackgroundTexture()
 }
 
 /// @brief Updates the background scrolling.
-void Room::updateBackground()
+/// @param deltaTime The time in seconds since the last frame.
+void Room::updateBackground(double deltaTime)
 {
     //Do nothing if no background was set, or we are not tiling
     if (background == NULL || !tileBackground)
@@ -299,7 +298,7 @@ void Room::updateBackground()
 
         bgWidth = background->getWidth() * bgScaleX;
 
-        bgXOffset += bgScrollSpeedX;
+        bgXOffset += bgScrollSpeedX * deltaTime;
         bgXOffset = fmod(bgXOffset, bgWidth);
     }
 
@@ -309,7 +308,7 @@ void Room::updateBackground()
 
         bgHeight = background->getHeight() * bgScaleY;
 
-        bgYOffset += bgScrollSpeedY;
+        bgYOffset += bgScrollSpeedY * deltaTime;
         bgYOffset = fmod(bgYOffset, bgHeight);
     }
 }
@@ -322,7 +321,7 @@ void Room::drawBackground(SDL_Renderer *renderer, Camera *camera)
     if (background == NULL)
     {
         //Draw the background color
-        SDL_Rect rect = {0, 0, camera->getWidth(), camera->getHeight()};
+        SDL_FRect rect = {0, 0, camera->getWidth(), camera->getHeight()};
 
         SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, 255);
         SDL_RenderFillRect(renderer, &rect);
@@ -410,7 +409,6 @@ void Room::setBackgroundTexture(Texture *background, bool tileBackground)
     this->background = background;
     this->tileBackground = tileBackground;
 
-    //Reset position
     bgXOffset = 0; 
     bgYOffset = 0;
 }
@@ -508,12 +506,6 @@ double Room::getBackgroundAngle()
 std::vector<ObjectInfo> Room::getRoomObjects()
 {
     return objects;
-}
-
-/// @return The name of the TileMap for this room, or "" if this room has no map.
-std::string Room::getTileMapName()
-{
-    return tilemap;
 }
 
 #pragma endregion Getters
