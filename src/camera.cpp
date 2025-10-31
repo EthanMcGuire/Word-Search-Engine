@@ -1,10 +1,10 @@
 #include "camera.hpp"
-#include "object.hpp"
+//#include "object.hpp"
 #include "random.hpp"
 #include "gameManager.hpp"
 #include "eventDispatcher.hpp"
-#include <SDL_stdinc.h>
-#include <SDL_Log.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_log.h>
 #include <float.h>
 
 /// @brief Creates a new camera.
@@ -22,7 +22,7 @@ Camera::Camera(GameManager *gameManager, gmtl::Vec2d pos, int width, int height,
     this->height = height;
     this->maxDistance = maxDistance;
 
-    followObject = NULL;
+    //followObject = NULL;
 
     screenshake = 0;
     screenshakeAmount = 1;
@@ -84,7 +84,7 @@ void Camera::update(Room *room, double deltaTime, Random *random)
 {
     gmtl::Vec2d destination;
     
-    //Update the cameras position
+    /*
     if (followObject != NULL)
     {
         //Follow the game object
@@ -101,7 +101,10 @@ void Camera::update(Room *room, double deltaTime, Random *random)
             pos = destination + distance;
         }
     }
-    else if (!gmtl::isEqual(pos, dest, DBL_EPSILON))
+    else 
+    */
+    
+    if (!gmtl::isEqual(pos, dest, DBL_EPSILON))
     {
         destination = dest;
     }
@@ -158,10 +161,12 @@ void Camera::setDest(gmtl::Vec2d dest)
     this->dest = dest;
 }
 
+/*
 void Camera::setFollowObject(Object *object)
 {
     followObject = object;
 }
+*/
 
 void Camera::setPosition(double x, double y)
 {

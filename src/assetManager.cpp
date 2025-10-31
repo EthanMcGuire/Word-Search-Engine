@@ -456,7 +456,7 @@ bool AssetManager::loadFont(std::string path, std::string assetName, json asset)
 
     if (font == NULL)
     {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to load font %s! Error: %s", assetName.c_str(), TTF_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to load font %s! Error: %s", assetName.c_str(), SDL_GetError());
 
         return false;
     }

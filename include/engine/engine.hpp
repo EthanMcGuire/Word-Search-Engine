@@ -7,6 +7,9 @@
 
 class GameManager;
 class AudioController;
+class EventDispatcher;
+class Random;
+class AssetManager;
 
 class Engine
 {
@@ -21,7 +24,10 @@ class Engine
         /// @brief Runs the games main loop.
         void mainLoop();
 
-        AudioController* getAudioController();
+        AudioController* getAudioController() const;
+        EventDispatcher* getEventDispatcher() const;
+        AssetManager* getAssetManager() const;
+        Random* getRandomNumberGenerator() const;
     
     private:
         void endGame();
@@ -37,6 +43,9 @@ class Engine
 
         GameManager *gameManager = NULL;
         AudioController *audioController = NULL;
+        EventDispatcher *eventDispatcher = NULL;
+        AssetManager *assetManager = NULL;
+        Random *rng = NULL;
         
         bool gameRunning;
 

@@ -10,7 +10,7 @@
 
 class GameManager;
 class Random;
-class Object;
+//class Object;
 
 class Camera
 {
@@ -56,14 +56,14 @@ class Camera
         void clearScreenshake();
 
         void setDest(gmtl::Vec2d dest);
-        void setFollowObject(Object *object);
+        //void setFollowObject(Object *object);
         void setPosition(double x, double y);
 
     protected:
         gmtl::Vec2d pos;
         gmtl::Vec2d dest;
 
-        Object *followObject;   //Game object to follow
+        //Object *followObject;   //Game object to follow
 
     private:
         /// @brief Dispatches the EventCameraMoved event, updating listeners of the Cameras position.

@@ -1,0 +1,28 @@
+{
+    "animations": [
+        {
+            "atlasName": "player",
+            "animationInfo": {
+                "name": "player",
+                "spriteStartIndex": 0,
+                "spriteEndIndex": 0,
+                "originX": 0,
+                "originY": 0,
+                "animationFPS": 0,
+                "type": "loop"
+            }
+        },
+        {
+            "atlasName": "rat",
+            "animationInfo": {
+                "name": "rat",
+                "spriteStartIndex": 0,
+                "spriteEndIndex": 3,
+                "originX": 15,
+                "originY": 15,
+                "animationFPS": 10,
+                "type": "loop"
+            }
+        }
+    ]
+}

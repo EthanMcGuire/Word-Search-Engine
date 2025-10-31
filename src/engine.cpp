@@ -1,26 +1,38 @@
 #include "engine.hpp"
 #include "config.hpp"
 #include "audioController.hpp"
+#include "eventDispatcher.hpp"
+#include "assetManager.hpp"
 #include "gameManager.hpp"
+#include "random.hpp"
 #include "timer.hpp"
 
 Engine::Engine()
 {
-    audioController = new AudioController();
+    assetManager = NULL;
+
     gameManager = new GameManager(this);
+    audioController = new AudioController();
+    eventDispatcher = new EventDispatcher();
+    rng = new Random();
 }
 
 Engine::~Engine()
 {
-    delete audioController;
-
     delete gameManager;
+    delete audioController;
+    delete eventDispatcher;
+    delete rng;
+    if (assetManager != NULL) delete assetManager;
     
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
-    audioController = NULL;
     gameManager = NULL;
+    audioController = NULL;
+    eventDispatcher = NULL;
+    rng = NULL;
+    assetManager = NULL;
     renderer = NULL;
     window = NULL;
 }
@@ -44,6 +56,8 @@ bool Engine::initializeEngine()
     {
         return false;
     }
+
+    assetManager = new AssetManager(renderer, rng);
 
     return true;
 }
@@ -152,7 +166,22 @@ void Engine::handleEvent(SDL_Event e)
     } 
 }
 
-AudioController* Engine::getAudioController()
+AudioController* Engine::getAudioController() const
 {
     return audioController;
+}
+
+EventDispatcher* Engine::getEventDispatcher() const
+{
+    return eventDispatcher;
+}
+
+AssetManager* Engine::getAssetManager() const
+{
+    return assetManager;
+}
+
+Random* Engine::getRandomNumberGenerator() const
+{
+    return rng;
 }

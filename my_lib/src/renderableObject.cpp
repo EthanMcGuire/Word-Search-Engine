@@ -3,8 +3,8 @@
 #include "eventDispatcher.hpp"
 #include "camera.hpp"
 #include "collisionDrawer.hpp"
-#include <SDL_render.h>
-#include <SDL_log.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_log.h>
 
 RenderableObject::RenderableObject(std::string name, GameManager* gameManager, double x, double y) : Object(name, gameManager, x, y)
 {

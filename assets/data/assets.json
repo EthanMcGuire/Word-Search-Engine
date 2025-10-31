@@ -1,0 +1,78 @@
+{
+    "assets": [
+        {
+            "filePath": "resources/images/test.bmp",
+            "assetType": "texture"
+        },
+        {
+            "filePath": "resources/images/dungeon.jpg",
+            "assetType": "texture"
+        },
+        {
+            "filePath": "resources/images/player.png",
+            "assetType": "atlas",
+            "spriteWidth": 32,
+            "spriteHeight": 32
+        },
+        {
+            "filePath": "resources/images/rat.png",
+            "assetType": "atlas",
+            "spriteWidth": 32,
+            "spriteHeight": 32
+        },
+        {
+            "filePath": "resources/images/tiles.png",
+            "assetType": "atlas",
+            "spriteWidth": 32,
+            "spriteHeight": 32
+        },
+        {
+            "filePath": "resources/images/messageBox.png",
+            "assetType": "atlas",
+            "spriteWidth": 8,
+            "spriteHeight": 8
+        },
+        {
+            "filePath": "resources/images/button.png",
+            "assetType": "atlas",
+            "spriteWidth": 4,
+            "spriteHeight": 4
+        },
+        {
+            "filePath": "resources/font/openSans/fntOpenSans.fnt",
+            "assetType": "bitmap"   
+        },
+        {
+            "filePath": "resources/font/openSansBold/fntOpenSansBold.fnt",
+            "assetType": "bitmap"   
+        },
+        {
+            "filePath": "resources/font/openSansOutline/fntOpenSansOutline.fnt",
+            "assetType": "bitmap"   
+        },
+        {
+            "filePath": "resources/font/openSansSmall/fntOpenSansSmall.fnt",
+            "assetType": "bitmap"   
+        },
+        {
+            "filePath": "resources/font/openSansBig/fntOpenSansBig.fnt",
+            "assetType": "bitmap"   
+        },
+        {
+            "filePath": "resources/audio/music/musHarbor.mp3",
+            "assetType": "music"
+        },
+        {
+            "filePath": "resources/audio/music/town_night.mp3",
+            "assetType": "music"
+        },
+        {
+            "filePath": "resources/audio/sound/sndHaha.wav",
+            "assetType": "sound"
+        },
+        {
+            "filePath": "resources/audio/sound/sndItem.wav",
+            "assetType": "sound"
+        }
+    ]
+}

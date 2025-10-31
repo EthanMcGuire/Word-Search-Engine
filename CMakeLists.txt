@@ -4,6 +4,9 @@ project(MyProgram)
 
 add_executable(MyProgram)
 
+target_include_directories(MyProgram PRIVATE include/engine)
+target_include_directories(MyProgram PRIVATE include/external)
+
 target_sources(MyProgram
     PRIVATE
         src/main.cpp
@@ -13,26 +16,19 @@ target_sources(MyProgram
         src/audioController.cpp
         src/timer.cpp
         src/countdownTimer.cpp
-        src/gameController.cpp
+        src/gameManager.cpp
         src/stringUtils.cpp
         src/jsonUtils.cpp
 
-    PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS 
-            include
-        FILES
-            include/main.hpp
-            include/config.hpp
-            include/engine.hpp
-            include/fileUtils.hpp
-            include/dateUtils.hpp
-            include/audioController.hpp
-            include/timer.hpp
-            include/countdownTimer.hpp
-            include/gameController.hpp
-            include/stringUtils.hpp
-            include/jsonUtils.hpp
+        src/room.cpp
+        src/camera.cpp
+        src/cameraLerp.cpp
+        src/eventDispatcher.cpp
+        src/assetManager.cpp
+        src/texture.cpp
+        src/spriteAtlas.cpp
+        src/bitmapFont.cpp
+        src/random.cpp
 )
 
 # Copy assets to build directory

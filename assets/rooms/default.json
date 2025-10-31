@@ -1,0 +1,36 @@
+{
+    "room": {
+        "name": "Default",
+        "width": 640,
+        "height": 360,
+
+        "cameraStartX": 0,
+        "cameraStartY": 0,
+
+        "bgColorR": 0,
+        "bgColorG": 0,
+        "bgColorB": 0,
+        "bgColorA": 255,
+
+        "bgTextureName": "",
+
+        "bgAngle": 0,
+        "bgScrollSpeedX": 0,
+        "bgScrollSpeedY": 0,
+        "bgScaleX": 0,
+        "bgScaleY": 0,
+
+        "tileBackground": false,
+
+        "objects": [
+            {
+                "objectName": "",
+                "x": 0,
+                "y": 0,
+                "parameters": []
+            }
+        ],
+
+        "tilemap": "default"
+    }
+}
