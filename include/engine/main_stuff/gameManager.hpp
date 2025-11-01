@@ -22,6 +22,22 @@ class GameManager
         GameManager(Engine *engine);
         ~GameManager();
         
+        /// @brief Initializes the game manager by creating the room and camera.
+        void initializeGameManager();
+
+        #pragma region GameControl
+
+        /// @brief Ends the game.
+        void endGame() const;
+
+        /// @brief Pauses the game.
+        void pauseGame();
+
+        /// @brief Unpauses the game.
+        void unpauseGame();
+
+        #pragma endregion GameControl
+
         #pragma region Game_Loop
 
         /// @brief Updates the game.
@@ -38,17 +54,6 @@ class GameManager
         void drawGui(SDL_Renderer *renderer);
 
         #pragma endregion Game_Loop
-
-        #pragma region GameControl
-
-        /// @brief Ends the game.
-        void endGame() const;
-
-        /// @brief Pauses the game.
-        void pauseGame();
-
-        /// @brief Unpauses the game.
-        void unpauseGame();
 
         #pragma region Game_State
 
@@ -136,9 +141,9 @@ class GameManager
 
         #pragma endregion Game_State
 
-        Engine *engine;
-        Room *room;
-        Camera *camera;
+        Engine *engine = NULL;
+        Room *room = NULL;
+        Camera *camera = NULL;
 
         bool gamePaused;
 

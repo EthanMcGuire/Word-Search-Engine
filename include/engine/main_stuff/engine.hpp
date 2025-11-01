@@ -26,7 +26,7 @@ class Engine
         /// @brief Closes the engine, cleaning up any initialized resources.
         void closeEngine();
 
-        /// @brief Starts the game by having the GameManager load the starting Room.
+        /// @brief Starts the game by initializing the GameManager and loading the starting room.
         void startGame();
 
         /// @brief Ends the game.

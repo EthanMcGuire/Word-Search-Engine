@@ -128,11 +128,12 @@ void Engine::closeEngine()
     TTF_Quit();
 }
 
-/// @brief Starts the game by having the GameManager load the starting Room.
+/// @brief Starts the game by initializing the GameManager and loading the starting room.
 void Engine::startGame()
 {
-    SDL_Log("Engine: Loading the default room and starting the game.");
+    SDL_Log("Engine: Initializing the game manager and starting the game.");
 
+    gameManager->initializeGameManager();
     gameManager->setRoomToLoad(Config::STARTING_ROOM);
 
     gameRunning = true;

@@ -1,7 +1,15 @@
 {
     "assets": [
         {
+            "filePath": "assets/texture/star_bg/bg_02_h.png",
+            "assetType": "texture"  
+        },
+        {
             "filePath": "assets/texture/stars.png",
+            "assetType": "texture"  
+        },
+        {
+            "filePath": "assets/texture/starset.png",
             "assetType": "texture"  
         },
         {

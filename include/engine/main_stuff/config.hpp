@@ -12,8 +12,8 @@ namespace Config
     static const char* GAME_VERSION = "1.0";
     static const char* STARTING_ROOM = "default";
 
-    static const int SCREEN_WIDTH = 640;
-    static const int SCREEN_HEIGHT = 360;
+    static const int SCREEN_WIDTH = 960;
+    static const int SCREEN_HEIGHT = 540;
 
     static const int FPS = 60;
     static const int TICKS_PER_FRAME = 1000 / FPS;

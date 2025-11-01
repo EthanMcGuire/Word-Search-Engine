@@ -288,8 +288,7 @@ void Room::clearBackgroundTexture()
 }
 
 /// @brief Updates the background scrolling.
-/// @param deltaTime The time in seconds since the last frame.
-void Room::updateBackground(double deltaTime)
+void Room::updateBackground()
 {
     //Do nothing if no background was set, or we are not tiling
     if (background == NULL || !tileBackground)
@@ -304,7 +303,7 @@ void Room::updateBackground(double deltaTime)
 
         bgWidth = background->getWidth() * bgScaleX;
 
-        bgXOffset += bgScrollSpeedX * deltaTime;
+        bgXOffset += bgScrollSpeedX;
         bgXOffset = fmod(bgXOffset, bgWidth);
     }
 
@@ -314,7 +313,7 @@ void Room::updateBackground(double deltaTime)
 
         bgHeight = background->getHeight() * bgScaleY;
 
-        bgYOffset += bgScrollSpeedY * deltaTime;
+        bgYOffset += bgScrollSpeedY;
         bgYOffset = fmod(bgYOffset, bgHeight);
     }
 }

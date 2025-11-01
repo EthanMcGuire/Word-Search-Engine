@@ -86,8 +86,7 @@ class Room
         void clearBackgroundTexture();
 
         /// @brief Updates the background scrolling.
-        /// @param deltaTime The time in seconds since the last frame.
-        void updateBackground(double deltaTime);
+        void updateBackground();
 
         /// @brief Draws the background.
         /// @param renderer The renderer to draw to.

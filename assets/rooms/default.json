@@ -2,8 +2,8 @@
     "room": {
         "name": "Default",
         "musicName": "crickets",
-        "width": 640,
-        "height": 360,
+        "width": 960,
+        "height": 540,
 
         "cameraStartX": 0,
         "cameraStartY": 0,
@@ -13,15 +13,15 @@
         "bgColorB": 0,
         "bgColorA": 255,
 
-        "bgTextureName": "",
+        "bgTextureName": "Starset",
 
         "bgAngle": 0,
-        "bgScrollSpeedX": 0,
-        "bgScrollSpeedY": 0,
-        "bgScaleX": 0,
-        "bgScaleY": 0,
+        "bgScrollSpeedX": 0.0,
+        "bgScrollSpeedY": 0.0,
+        "bgScaleX": 0.5,
+        "bgScaleY": 0.5,
 
-        "tileBackground": false,
+        "tileBackground": true,
 
         "objects": [
             {

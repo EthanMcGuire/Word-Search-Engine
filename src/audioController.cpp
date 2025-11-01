@@ -1,4 +1,5 @@
 #include "audioController.hpp"
+#include "stringUtils.hpp"
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_filesystem.h>
 
@@ -83,6 +84,8 @@ bool AudioController::update()
 /// @return True on success, false on failure.
 bool AudioController::playMusic(std::string soundName)
 {
+    soundName = stringToLower(soundName);
+
     if (musics.find(soundName) == musics.end())
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "AudioController: Failed to play music. Could not find sound name '%s' in our musics map.", soundName.c_str());
@@ -137,6 +140,8 @@ bool AudioController::stopMusic()
 /// @return True on success, false on failure.
 bool AudioController::playSound(std::string soundName)
 {
+    soundName = stringToLower(soundName);
+    
     if (sounds.find(soundName) == sounds.end())
     {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "AudioController: Failed to play sound. Could not find sound name '%s' in our sounds map.", soundName.c_str());
@@ -224,6 +229,8 @@ bool AudioController::loadMusic(const char *fname, std::string soundName)
 {
     Sound *sound;
 
+    soundName = stringToLower(soundName);
+
     //Make sure music doesn't already exist
     if (musics.find(soundName) != musics.end())
     {
@@ -253,6 +260,8 @@ bool AudioController::loadMusic(const char *fname, std::string soundName)
 bool AudioController::loadSound(const char *fname, std::string soundName)
 {
     Sound *sound;
+
+    soundName = stringToLower(soundName);
 
     //Make sure sound doesn't already exist
     if (sounds.find(soundName) != sounds.end())

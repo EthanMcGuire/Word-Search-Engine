@@ -12,19 +12,51 @@ GameManager::GameManager(Engine *engine)
 
     gamePaused = false;
     showFPS = true;
-
-    room = new Room(engine->getAssetManager(), "DEFAULT", Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
-    camera = new CameraLerp(this, gmtl::Vec2d(0, 0), Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
 }
 
 GameManager::~GameManager()
 {
-    delete room;
-    delete camera;
+    if (room != NULL)
+    {
+        delete room;
+        room = NULL;
+    }
 
-    room = NULL;
-    camera = NULL;
+    if (camera != NULL)
+    {
+        delete camera;
+        camera = NULL;
+    }
 }
+
+/// @brief Initializes the game manager by creating the room and camera.
+void GameManager::initializeGameManager()
+{
+    room = new Room(engine->getAssetManager(), "DEFAULT", Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
+    camera = new CameraLerp(this, gmtl::Vec2d(0, 0), Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
+}
+
+#pragma region GameControl
+
+/// @brief Ends the game.
+void GameManager::endGame() const
+{
+    engine->endGame();
+}
+
+/// @brief Pauses the game.
+void GameManager::pauseGame()
+{
+    gamePaused = true;
+}
+
+/// @brief Unpauses the game.
+void GameManager::unpauseGame()
+{
+    gamePaused = false;
+}
+
+#pragma endregion GameControl
 
 #pragma region Game_Loop
 
@@ -34,7 +66,7 @@ GameManager::~GameManager()
 bool GameManager::update(double deltaTime)
 {
     //Update background
-    room->updateBackground(deltaTime);
+    room->updateBackground();
 
     //Update objects
     //objectManager->updateGameObjects(deltaTime, isGamePaused);
@@ -101,23 +133,7 @@ void GameManager::drawGui(SDL_Renderer *renderer)
 
 #pragma endregion Game_Loop
 
-/// @brief Ends the game.
-void GameManager::endGame() const
-{
-    engine->endGame();
-}
-
-/// @brief Pauses the game.
-void GameManager::pauseGame()
-{
-    gamePaused = true;
-}
-
-/// @brief Unpauses the game.
-void GameManager::unpauseGame()
-{
-    gamePaused = false;
-}
+#pragma region Game_State
 
 /// @brief Sets a room to load at the end of the frame.
 /// @param nextRoomToLoad The name of the room to load.
@@ -207,6 +223,8 @@ void GameManager::clearGameObjects()
         localPlayers[i] = nullptr;
     */
 }
+
+#pragma endregion Game_State
 
 #pragma region Getters
 
