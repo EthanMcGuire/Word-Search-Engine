@@ -1,0 +1,24 @@
+-GUI should be small as grid will take a lot of space with more letters
+-Game objects for managing game data:
+    -Stats
+    -Timer
+    -Grid
+    -Words
+-Use callback events for game events that occur
+    -Like letterPressedCallback
+-Difficulty control:
+    -Grid size:
+        -Easy: 6 x 6
+        -Hard: 40 x 40
+    -Word Count (RNG based):
+        -Easy: 1 to 3 Words
+        -Hard: 5 to 10 Words
+    -Word Length (RNG based):
+        -Random length, capped at grid size
+            -random value from 3 to grid_size
+-Word placement strategy:
+    -Place the longest words first, as these are more difficult to place
+        -Then place the smaller words
+    -If a word would cross another word, attempt to cross it (Involves search for a matching letter to cross over)
+    -Words can be placed horizontally, vertically, or diagonally. They can also be placed backwards
+    -

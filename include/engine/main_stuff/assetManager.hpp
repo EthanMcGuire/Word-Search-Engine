@@ -3,24 +3,19 @@
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
+#include <unordered_map>
+#include <string>
+#include <SDL3/SDL_render.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "json/json_fwd.hpp"
 #include "spriteAtlas.hpp"
 #include "bitmapFont.hpp"
-#include <SDL3/SDL_render.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <unordered_map>
-#include <string>
 
 using json = nlohmann::json;
 
 class Engine;
+class AudioController;
 class Random;
-
-//TODO
-//FIX MUSIC AND SOUND
-//Maybe I can have them separated still?
-    //The thing is, they all use the same Sound struct now. But maybe since I have them split up in different arrays, I can group them by types?
-    //Can also use a map to map string to sound resource when accessing these assets. Good ideas!
 
 enum AssetType
 {
@@ -41,8 +36,9 @@ class AssetManager
     public:
         /// @brief Creates the asset manager.
         /// @param renderer The window renderer. Used to load textures.
+        /// @param audioController The audio controller. Used to load sound assets.
         /// @param random The RNG class. Passed to bitmap fonts for random character shake.
-        AssetManager(SDL_Renderer *renderer, Random *random);
+        AssetManager(SDL_Renderer *renderer, AudioController *audioController, Random *random);
 
         /// @brief Gets a texture asset by name.
         /// @param name The name of the asset to pull.
@@ -63,16 +59,6 @@ class AssetManager
         /// @param name The name of the asset to pull.
         /// @return A pointer to the asset, or NULL if the asset was not found.
         BitmapFont* getBitmap(std::string name) const;
-
-        /// @brief Gets a music asset by name.
-        /// @param name The name of the asset to pull.
-        /// @return A pointer to the asset, or NULL if the asset was not found.
-        Mix_Music* getMusic(std::string name) const;
-
-        /// @brief Gets a sound asset by name.
-        /// @param name The name of the asset to pull.
-        /// @return A pointer to the asset, or NULL if the asset was not found.
-        Mix_Chunk* getSound(std::string name) const;
 
     private:
         /// @brief Loads the game assets into the unordered_map's.
@@ -133,14 +119,13 @@ class AssetManager
         friend class Engine;
 
         SDL_Renderer *renderer;
+        AudioController *audioController;
         Random *random;
 
         std::unordered_map<std::string, Texture*> textures;
         std::unordered_map<std::string, SpriteAtlas*> atlases;
         std::unordered_map<std::string, TTF_Font*> fonts;
         std::unordered_map<std::string, BitmapFont*> bitmaps;
-        std::unordered_map<std::string, Mix_Music*> musics;
-        std::unordered_map<std::string, Mix_Chunk*> sounds;
 };
 
 #endif

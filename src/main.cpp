@@ -28,8 +28,6 @@ int main(int argc, char *argv[])
     {
         return SDL_APP_FAILURE;
     }
-    
-    //(engine->getAudioController())->playMusic(MUSIC_SOURCE_MUSIC_1);
 
     engine->mainLoop();
 

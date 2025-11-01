@@ -57,7 +57,7 @@ bool Engine::initializeEngine()
         return false;
     }
 
-    assetManager = new AssetManager(renderer, rng);
+    assetManager = new AssetManager(renderer, audioController, rng);
 
     return true;
 }
@@ -118,6 +118,9 @@ void Engine::mainLoop()
 
         /* clear the window to the draw color. */
         SDL_RenderClear(renderer);
+
+        //gameManager->drawGui();
+        //gameManager->draw();
 
         /* put the newly-cleared rendering on the screen. */
         SDL_RenderPresent(renderer);

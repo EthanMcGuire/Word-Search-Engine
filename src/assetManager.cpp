@@ -1,5 +1,6 @@
 #include "assetManager.hpp"
 #include "random.hpp"
+#include "audioController.hpp"
 #include "texture.hpp"
 #include "spriteAtlas.hpp"
 #include "json/json.hpp"
@@ -12,10 +13,12 @@ using json = nlohmann::json;
 
 /// @brief Creates the asset manager.
 /// @param renderer The window renderer. Used to load textures.
+/// @param audioController The audio controller. Used to load sound assets.
 /// @param random The RNG class. Passed to bitmap fonts for random character shake.
-AssetManager::AssetManager(SDL_Renderer *renderer, Random *random)
+AssetManager::AssetManager(SDL_Renderer *renderer, AudioController *audioController, Random *random)
 {
     this->renderer = renderer;
+    this->audioController = audioController;
     this->random = random;
 }
 
@@ -82,40 +85,6 @@ BitmapFont* AssetManager::getBitmap(std::string name) const
     if (bitmaps.find(name) != bitmaps.end())
     {
         return bitmaps.at(name);
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-/// @brief Gets a music asset by name.
-/// @param name The name of the asset to pull.
-/// @return A pointer to the asset, or NULL if the asset was not found.
-Mix_Music* AssetManager::getMusic(std::string name) const
-{
-    name = stringToLower(name);
-
-    if (musics.find(name) != musics.end())
-    {
-        return musics.at(name);
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-/// @brief Gets a sound asset by name.
-/// @param name The name of the asset to pull.
-/// @return A pointer to the asset, or NULL if the asset was not found.
-Mix_Chunk* AssetManager::getSound(std::string name) const
-{
-    name = stringToLower(name);
-
-    if (sounds.find(name) != sounds.end())
-    {
-        return sounds.at(name);
     }
     else
     {
@@ -215,24 +184,10 @@ void AssetManager::clearAssets()
         it->second = NULL;
     }
 
-    for (auto it = musics.begin(); it != musics.end(); it++)
-    {
-        Mix_FreeMusic(it->second);
-        it->second = NULL;
-    }
-
-    for (auto it = sounds.begin(); it != sounds.end(); it++)
-    {
-        Mix_FreeChunk(it->second);
-        it->second = NULL;
-    }
-
     textures.clear();
     atlases.clear();
     fonts.clear();
     bitmaps.clear();
-    musics.clear();
-    sounds.clear();
 }
 
 /// @brief Displays the number of loaded assets for each asset type.
@@ -240,7 +195,7 @@ void AssetManager::displayAssetInfo() const
 {
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "AssetManager: Loaded asset information: \
                                                 \n\tTexture Count: %lld\n\tAtlas Count: %lld\n\tFont Count: %lld \
-                                                \n\tBitmap Count: %lld\n\tMusic Count: %lld\n\tSound Count: %lld\n", textures.size(), atlases.size(), fonts.size(), bitmaps.size(), musics.size(), sounds.size());
+                                                \n\tBitmap Count: %lld\n\tMusic Count: %lld\n\tSound Count: %lld\n", textures.size(), atlases.size(), audioController->getMusicCount(), audioController->getSoundCount());
 }
 
 /// @brief Loads a asset by type.
@@ -503,29 +458,7 @@ bool AssetManager::loadBitmap(std::string path, std::string assetName)
 /// @return True on success. False otherwise.
 bool AssetManager::loadMusic(std::string path, std::string assetName)
 {
-    Mix_Music *music;
-
-    //Make sure asset doesn't already exist
-    if (musics.find(assetName) != musics.end())
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%sDuplicate music asset. Music %s was added twice!", ERROR_MESSAGE_START.c_str(), assetName.c_str());
-
-        return false;
-    }
-
-    //Load the asset
-    music = Mix_LoadMUS(path.c_str());
-
-    if (music == NULL)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to load music %s! Error: %s", assetName.c_str(), Mix_GetError());
-
-        return false;
-    }
-
-    musics[assetName] = music;
-
-    return true;
+    return audioController->loadMusic(path.c_str(), assetName);
 }
 
 /// @brief Loads a sound asset.
@@ -534,29 +467,7 @@ bool AssetManager::loadMusic(std::string path, std::string assetName)
 /// @return True on success. False otherwise.
 bool AssetManager::loadSound(std::string path, std::string assetName)
 {
-    Mix_Chunk *sound;
-
-    //Make sure asset doesn't already exist
-    if (sounds.find(assetName) != sounds.end())
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%sDuplicate sound asset. Sound %s was added twice!", ERROR_MESSAGE_START.c_str(), assetName.c_str());
-
-        return false;
-    }
-
-    //Load the asset
-    sound = Mix_LoadWAV(path.c_str());
-
-    if (sound == NULL)
-    {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to load sound %s! Error: %s", assetName.c_str(), Mix_GetError());
-
-        return false;
-    }
-
-    sounds[assetName] = sound;
-
-    return true;
+    return audioController->loadSound(path.c_str(), assetName);
 }
 
 #pragma endregion AssetLoading
