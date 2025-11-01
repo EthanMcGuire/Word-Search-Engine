@@ -15,28 +15,36 @@ int main(int argc, char *argv[])
     SDL_SetAppMetadata(Config::GAME_TITLE, Config::GAME_VERSION, "com.ethan.engine");
     SDL_SetLogOutputFunction(&reportLog, NULL);
 
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS)) 
-    {
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-
-        return SDL_APP_FAILURE;
-    }
+    SDL_Log("Starting game. Name: %s. Game version: %s", Config::GAME_TITLE, Config::GAME_VERSION);
 
     engine = new Engine();
 
     if (!engine->initializeEngine())
     {
+        cleanUp();
+
         return SDL_APP_FAILURE;
     }
 
+    engine->startGame();
+
+    SDL_Log("Starting the main loop.");
+
     engine->mainLoop();
 
-    delete engine;
-    engine = nullptr;
-
-    SDL_Quit();
+    cleanUp();
 
     return SDL_APP_SUCCESS;
+}
+
+void cleanUp()
+{
+    SDL_Log("Cleaning up...");
+
+    engine->closeEngine();
+
+    delete engine;
+    engine = NULL;
 }
 
 void reportLog(void *userdata, int category, SDL_LogPriority priority, const char* message)

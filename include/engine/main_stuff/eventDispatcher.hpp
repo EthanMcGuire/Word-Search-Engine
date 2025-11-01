@@ -3,7 +3,6 @@
 #ifndef EVENT_DISPATCHER_H
 #define EVENT_DISPATCHER_H
 
-#include "event.hpp"
 #include "SDL3/SDL_events.h"
 #include <functional>
 #include <vector>
@@ -12,6 +11,8 @@
 #include <typeindex>
 #include <queue>
 #include <utility>
+
+class Event;
 
 /// @brief RETARD ALERT
 ///        YOU CAN CALL addListener() TWICE FOR THE SAME FUNCTION!!!! BE CAUTIOUS!!!

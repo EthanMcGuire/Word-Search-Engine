@@ -50,10 +50,10 @@ class AudioController
         bool playingMusic();
 
         /// @return The number of loaded music assets.
-        int getMusicCount();
+        size_t getMusicCount();
 
         /// @return The number of loaded sound assets.
-        int getSoundCount();
+        size_t getSoundCount();
 
         #pragma endregion Getters
 

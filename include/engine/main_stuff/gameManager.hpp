@@ -4,13 +4,16 @@
 #define GAME_MANAGER_H
 
 #include <queue>
+#include <string>
 
 class Engine;
 class Camera;
 class Room;
 class Random;
+class AudioController;
 class AssetManager;
 class EventDispatcher;
+class SDL_Renderer;
 
 class GameManager
 {
@@ -26,33 +29,26 @@ class GameManager
         /// @return True on success, false on failure.
         bool update(double deltaTime);
 
-        /*
         /// @brief Draws the room background and the game objects.
         /// @param renderer The game windows renderer.
         void draw(SDL_Renderer *renderer);
 
         /// @brief Draws the game GUI. This includes the HUD and any debug information.
         /// @param renderer The game windows renderer.
-        void draw(SDL_Renderer *renderer);
-        */
+        void drawGui(SDL_Renderer *renderer);
 
         #pragma endregion Game_Loop
 
         #pragma region GameControl
 
-        /// @brief Starts the game.
-        void startGame();
-
-        /*
         /// @brief Ends the game.
         void endGame() const;
 
-        /// @brief Pauses the game by disabling the players input. If this isn't a online game, update events will be ignored until the game is unpaused.
+        /// @brief Pauses the game.
         void pauseGame();
 
-        /// @brief Unpauses the game, enabling the players input. If this isn't a online game, update events will be resumed.
+        /// @brief Unpauses the game.
         void unpauseGame();
-        */
 
         #pragma region Game_State
 
@@ -71,13 +67,12 @@ class GameManager
 
         /// @brief Resets the game error message to empty string.
         void resetGameErrorMessage();
-
-        /// @brief Sets a room to load at the end of the frame.
-        /// @param nextRoomToLoad The room to load. Either the name of the room or a JSON object describing the room.
-        /// @param isJson Whether the room to load is a JSON.
-        void setRoomToLoad(std::string nextRoomToLoad, bool isJson);
         */
 
+        /// @brief Sets a room to load at the end of the frame.
+        /// @param nextRoomToLoad The name of the room to load.
+        void setRoomToLoad(std::string nextRoomToLoad);
+        
         #pragma endregion Game_State
 
         #pragma region Collision
@@ -126,35 +121,18 @@ class GameManager
         #pragma endregion Getters
 
     private:
-
-        #pragma region Game_Loop
-
-        /*
-        /// @brief Updates the games room, camera, and game objects.
-        /// @param deltaTime Time change in seconds since last frame.
-        /// @param isGamePaused Certain objects and the camera will not be updated if this is true.
-        void updateGameData(double deltaTime, bool isGamePaused);
-        */
-
-        #pragma endregion Game_Loop
     
         #pragma region Game_State
 
-        /*
-        /// @brief Sets the game state. Loading a new Room based on the state.
-        /// @param newState The new state
-        void setState(GAME_STATE newState);
-        
         /// @brief Loads a room (a level). Clears all game data like game objects. Also creates base objects for the room.
         /// @return True on success, false otherwise.
         bool loadRoom();
 
-        /// @brief Resets the game data including game objects, tilemaps, and the camera.
+        /// @brief Resets the game data including game objects and the camera.
         void resetGameData();
 
-        /// @brief Destroys all of the game objects, and resets the clients player server ID.
+        /// @brief Destroys all of the game objects.
         void clearGameObjects();
-        */
 
         #pragma endregion Game_State
 
@@ -162,14 +140,9 @@ class GameManager
         Room *room;
         Camera *camera;
 
-        std::queue<uint32_t> eventListenerIds;  //Used to remove listeners from the EventDispatcher
-
-        //State control
-        //GAME_STATE gameState;
         bool gamePaused;
 
         bool readyToLoadRoom;
-        bool nextRoomIsJson;            //Whether the next room to load is a JSON, or a room name
         std::string nextRoom;           //Either the room name or the rooms JSON string
 
         //Debugging

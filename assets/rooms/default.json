@@ -1,6 +1,7 @@
 {
     "room": {
         "name": "Default",
+        "musicName": "crickets",
         "width": 640,
         "height": 360,
 
@@ -29,8 +30,6 @@
                 "y": 0,
                 "parameters": []
             }
-        ],
-
-        "tilemap": "default"
+        ]
     }
 }

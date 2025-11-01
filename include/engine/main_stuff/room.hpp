@@ -26,6 +26,7 @@ struct ObjectInfo
 struct RoomInfo
 {
     std::string name;
+    std::string musicName;
     unsigned int width, height;
 
     int cameraStartX, cameraStartY;
@@ -163,6 +164,9 @@ class Room
 
         /// @return The list of objects that should be created for this room.
         std::vector<ObjectInfo> getRoomObjects();
+
+        /// @return Returns the name of the music for this room. If no music is defined for this room, "" is returned.
+        std::string getRoomMusic();
         
         #pragma endregion Getters
 
@@ -174,12 +178,11 @@ class Room
 
         AssetManager *assetManager;
 
-        bool roomLoaded;
-
         std::string name;
+        std::string musicName;
         int width, height;
-
         int cameraStartX, cameraStartY;
+        bool roomLoaded;
 
         //Room background
         SDL_Color backgroundColor;
@@ -196,9 +199,6 @@ class Room
 
         //Objects
         std::vector<ObjectInfo> objects;
-
-        //TODO
-        //Add music? Or in the JSON file, a music file name can be given. If given, play upon starting the room.
 };
 
 #endif

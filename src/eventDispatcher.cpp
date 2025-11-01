@@ -23,7 +23,7 @@ void EventDispatcher::clearListeners()
     nextListenerId = 0;
     nextSDLListenerId = 0;  
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "EventDispatcher: Cleared listeners.");
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "EventDispatcher: Finished clearing all listeners.");
 }
 
 /// @brief Removes a listener from the given event type.
@@ -99,7 +99,7 @@ void EventDispatcher::removeSDLListener(uint32_t id)
 
     sdlListeners.erase(id);
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "EventDispatcher: Removed SDL listener: ID = %d", id);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "EventDispatcher: Removed SDL listener with ID = %d", id);
 }
 
 /// @brief Dispatches the given event to its listeners.

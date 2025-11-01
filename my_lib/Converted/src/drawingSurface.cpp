@@ -97,7 +97,7 @@ void DrawingSurface::drawSurface(SDL_Renderer *renderer, int x, int y, double xS
         return;
     }
 
-    SDL_FRect renderQuad = {x, y, (int) width, (int) height};
+    SDL_FRect renderQuad = {(float) x, (float) y, (float) width, (float) height};
 
     if (clip != NULL)
     {
@@ -132,7 +132,7 @@ void DrawingSurface::drawSurfaceStretched(SDL_Renderer *renderer, int x, int y, 
         return;
     }
 
-    SDL_FRect renderQuad = {x, y, drawWidth, drawHeight};
+    SDL_FRect renderQuad = {(float) x, (float) y, (float) drawWidth, (float) drawHeight};
 
     //Render the texture
     SDL_RenderTextureRotated(renderer, texture, clip, &renderQuad, angle, center, flip);

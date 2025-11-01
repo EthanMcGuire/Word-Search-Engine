@@ -180,13 +180,13 @@ bool AudioController::playingMusic()
 }
 
 /// @return The number of loaded music assets.
-int AudioController::getMusicCount()
+size_t AudioController::getMusicCount()
 {
     return musics.size();
 }
 
 /// @return The number of loaded sound assets.
-int AudioController::getSoundCount()
+size_t AudioController::getSoundCount()
 {
     return sounds.size();
 }

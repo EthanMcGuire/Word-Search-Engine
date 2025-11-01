@@ -30,6 +30,7 @@ target_sources(MyProgram
         src/spriteAtlas.cpp
         src/bitmapFont.cpp
         src/random.cpp
+        src/collision.cpp
 )
 
 # Copy assets to build directory

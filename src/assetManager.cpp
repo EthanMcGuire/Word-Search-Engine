@@ -195,7 +195,7 @@ void AssetManager::displayAssetInfo() const
 {
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "AssetManager: Loaded asset information: \
                                                 \n\tTexture Count: %lld\n\tAtlas Count: %lld\n\tFont Count: %lld \
-                                                \n\tBitmap Count: %lld\n\tMusic Count: %lld\n\tSound Count: %lld\n", textures.size(), atlases.size(), audioController->getMusicCount(), audioController->getSoundCount());
+                                                \n\tBitmap Count: %lld\n\tMusic Count: %lld\n\tSound Count: %lld\n", textures.size(), atlases.size(), fonts.size(), bitmaps.size(), audioController->getMusicCount(), audioController->getSoundCount());
 }
 
 /// @brief Loads a asset by type.

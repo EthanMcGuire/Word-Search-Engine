@@ -20,6 +20,8 @@ void from_json(const json& j, RoomInfo& roomInfo)
     j.at("width").get_to(roomInfo.width);
     j.at("height").get_to(roomInfo.height);
 
+    j.at("musicName").get_to(roomInfo.musicName);
+
     j.at("cameraStartX").get_to(roomInfo.cameraStartX);
     j.at("cameraStartY").get_to(roomInfo.cameraStartY);
 
@@ -151,7 +153,7 @@ bool Room::loadRoomByName(std::string roomName)
     //Load the room
     if (!loadRoomFromJson(roomData))
     {
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Room: Failed to load room %s.", roomName.c_str());
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Room: Failed to load room %s.", roomName.c_str());
 
         return false;
     }
@@ -187,6 +189,8 @@ bool Room::loadRoomFromString(std::string str)
 bool Room::loadRoomFromJson(json roomJson)
 {
     RoomInfo roomInfo;
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Room: Loading room JSON %s.", roomJson.dump().c_str());
 
     //Failed to parse JSON?
     if (roomJson.is_null())
@@ -225,6 +229,7 @@ bool Room::loadRoomFromJson(json roomJson)
 
     //Populate variables from RoomInfo
     name = roomInfo.name;
+    musicName = roomInfo.musicName;
     width = roomInfo.width;
     height = roomInfo.height;
 
@@ -254,6 +259,7 @@ void Room::clearRoom()
     roomLoaded = false;
 
     name = "DEFAULT";
+    musicName = "";
 
     cameraStartX = 0;
     cameraStartY = 0;
@@ -321,7 +327,7 @@ void Room::drawBackground(SDL_Renderer *renderer, Camera *camera)
     if (background == NULL)
     {
         //Draw the background color
-        SDL_FRect rect = {0, 0, camera->getWidth(), camera->getHeight()};
+        SDL_FRect rect = {0.f, 0.f, (float) camera->getWidth(), (float) camera->getHeight()};
 
         SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, 255);
         SDL_RenderFillRect(renderer, &rect);
@@ -506,6 +512,12 @@ double Room::getBackgroundAngle()
 std::vector<ObjectInfo> Room::getRoomObjects()
 {
     return objects;
+}
+
+/// @return Returns the name of the music for this room. If no music is defined for this room, "" is returned.
+std::string Room::getRoomMusic()
+{
+    return musicName;
 }
 
 #pragma endregion Getters

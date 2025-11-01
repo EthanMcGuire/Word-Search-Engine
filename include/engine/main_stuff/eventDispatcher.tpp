@@ -1,4 +1,5 @@
 #include "eventDispatcher.hpp"
+#include "event.hpp"
 #include <SDL3/SDL_log.h>
 
 /// @brief Adds a listener for the given event type.
@@ -24,7 +25,7 @@ uint32_t EventDispatcher::addListener(std::function<void(T*)> callback)
 
     listeners.emplace(listenerId, std::make_pair(type, func));
     
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "EventDispatcher: Added listener: ID = %d", listenerId);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "EventDispatcher: Added listener with ID = %d", listenerId);
 
     return listenerId;
 }

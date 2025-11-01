@@ -96,10 +96,10 @@ void SpriteAtlas::render(SDL_Renderer *renderer, unsigned int spriteIndex, int x
     row = spriteIndex / columnCount;
 
     //Get the sprites region in the sprite atlas
-    spriteClip.x = col * spriteWidth;
-    spriteClip.y = row * spriteHeight;
-    spriteClip.w = spriteWidth;
-    spriteClip.h = spriteHeight;
+    spriteClip.x = (float) col * spriteWidth;
+    spriteClip.y = (float) row * spriteHeight;
+    spriteClip.w = (float) spriteWidth;
+    spriteClip.h = (float) spriteHeight;
 
     //Render part of the sprite
     if (clip != NULL)
@@ -147,10 +147,10 @@ void SpriteAtlas::renderStretched(SDL_Renderer *renderer, unsigned int spriteInd
     row = spriteIndex / columnCount;
 
     //Get the sprites region in the sprite atlas
-    spriteClip.x = col * spriteWidth;
-    spriteClip.y = row * spriteHeight;
-    spriteClip.w = spriteWidth;
-    spriteClip.h = spriteHeight;
+    spriteClip.x = (float) col * spriteWidth;
+    spriteClip.y = (float) row * spriteHeight;
+    spriteClip.w = (float) spriteWidth;
+    spriteClip.h = (float) spriteHeight;
 
     //Render part of the sprite
     if (clip != NULL)
