@@ -31,6 +31,11 @@ target_sources(MyProgram
         src/bitmapFont.cpp
         src/random.cpp
         src/collision.cpp
+        src/draw.cpp
+        src/object.cpp
+        src/objectManager.cpp
+        src/parameterVariant.cpp
+        src/objectFactory.cpp
 )
 
 # Copy assets to build directory

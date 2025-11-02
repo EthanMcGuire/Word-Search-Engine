@@ -6,6 +6,11 @@
 #include "cameraLerp.hpp"
 #include "config.hpp"
 
+#include "objectFactory.hpp"
+#include "objectManager.hpp"
+//#include "objectDrawer.hpp"
+#include "object.hpp"
+
 GameManager::GameManager(Engine *engine)
 {
     this->engine = engine;
@@ -208,6 +213,25 @@ void GameManager::resetGameData()
     camera->setPosition(0, 0);
 }
 
+#pragma endregion Game_State
+
+#pragma region Game_Objects
+
+/// @brief Destroys a game object.
+/// @param object The object to destroy.
+void destroyGameObject(Object *object);
+
+/// @brief Destroys a game object.
+/// @param id ID of the object to destroy.
+void destroyGameObject(int id);
+
+/// @brief Destroys the game objects that are pending to be destroyed. Should be called at the end of each frame.
+void destroyGameObjects();
+
+/// @brief Gets the next unique ID from the object manager. Used to uniquely identify each object.
+/// @return The next ID.
+unsigned int getNextObjectId();
+
 /// @brief Destroys all of the game objects.
 void GameManager::clearGameObjects()
 {
@@ -224,7 +248,26 @@ void GameManager::clearGameObjects()
     */
 }
 
-#pragma endregion Game_State
+/// @brief Adds a game object to the object manager. This does NOT create the game object.
+///        If the object is a Player, adds it to the Players list.
+///        If the object is a Menu, adds it to the MenuManager.
+/// @param object The object to add. This should not be NULL.
+void addGameObject(Object *object);
+
+/// @brief Pends a game object for deletion by adding it to the destroy list. The game object will be marked as destroyed.
+/// @param object The game object to kill.
+void pendObjectForDestruction(Object *object);
+
+#pragma endregion Game_Objects
+
+#pragma region WrapperMethods
+
+/// @brief Pulls a bitmap font from the asset manager.
+/// @param name The font name.
+/// @return The font, or nullptr.
+BitmapFont* getBitmapFont(std::string name) const;
+
+#pragma endregion WrapperMethods
 
 #pragma region Getters
 

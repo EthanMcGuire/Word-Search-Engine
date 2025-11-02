@@ -85,4 +85,6 @@ class Engine
         std::queue<uint32_t> sdlEventListenerIds;
 };
 
+#include "engine.tpp"
+
 #endif

@@ -36,8 +36,8 @@ void Draw::drawSpriteExt(SDL_Renderer *renderer, Camera *camera, SpriteAtlas *at
     gmtl::Vec2d drawPos;
     gmtl::Vec2d drawOrigin;
     gmtl::Vec2d drawScale;
-    SDL_Point center;
-    SDL_RendererFlip flip = SDL_FLIP_NONE;
+    SDL_FPoint center;
+    SDL_FlipMode flip = SDL_FLIP_NONE;
     int drawWidth, drawHeight;
     double cameraX, cameraY;
     
@@ -50,7 +50,7 @@ void Draw::drawSpriteExt(SDL_Renderer *renderer, Camera *camera, SpriteAtlas *at
     //Get draw origin
     drawOrigin = gmtl::Vec2d(drawScale[0] * origin[0], drawScale[1] * origin[1]);
 
-    center = {(int) drawOrigin[0], (int) drawOrigin[1]};
+    center = {(float) drawOrigin[0], (float) drawOrigin[1]};
 
     //Get draw location
     drawPos = pos - drawOrigin;
@@ -67,7 +67,7 @@ void Draw::drawSpriteExt(SDL_Renderer *renderer, Camera *camera, SpriteAtlas *at
         //Account for negative scale
         if (imageScale[0] < 0 && imageScale[1] < 0)
         {
-            flip = (SDL_RendererFlip) (SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
+            flip = (SDL_FlipMode) (SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
         }
         else if (imageScale[0] < 0)
         {

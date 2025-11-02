@@ -5,11 +5,16 @@
 
 #include <queue>
 #include <string>
+#include <vector>
+
+#include "collision.hpp"
+#include "parameterVariant.hpp"
 
 class Engine;
 class Camera;
 class Room;
 class Random;
+class ObjectManager;
 class AudioController;
 class AssetManager;
 class EventDispatcher;
@@ -57,34 +62,109 @@ class GameManager
 
         #pragma region Game_State
 
-        /*
-        /// @brief Checks if an error occured.
-        /// @return True if an error occured, false otherwise.
-        bool gameErrorOccured();
-
-        /// @brief Gets a message title for an error that occured.
-        /// @return The error title, or empty string if no error occured.
-        std::string getGameErrorTitle();
-
-        /// @brief Gets a message for an error that occured.
-        /// @return The error that occured, or empty string if no error occured.
-        std::string getGameErrorMessage();
-
-        /// @brief Resets the game error message to empty string.
-        void resetGameErrorMessage();
-        */
-
         /// @brief Sets a room to load at the end of the frame.
         /// @param nextRoomToLoad The name of the room to load.
         void setRoomToLoad(std::string nextRoomToLoad);
         
         #pragma endregion Game_State
 
+        #pragma region Game_Objects
+
+        /// @brief Creates a game object from the ObjectFactory, Adding the object to the ObjectManager.
+        ///        For Menu's, the playerIndex will be set to 0. To set the playerIndex, call createMenuObject() instead.
+        /// @tparam ...Args Extra arg types.
+        /// @tparam T Object class to return. MUST derive from Object.
+        /// @param objectName The name of the object to create.
+        /// @param x X position.
+        /// @param y Y position.
+        /// @param ...args Extra args
+        /// @return The object reference.
+        template <typename T = Object, typename... Args>
+        T* createObject(std::string objectName, double x, double y, Args... args);
+
+        /// @brief Creates a game object from the ObjectFactory, Adding the object to the ObjectManager.
+        ///        For Menu's, the playerIndex will be set to 0. To set the playerIndex, call createMenuObject() instead.
+        /// @tparam ...Args Extra arg types.
+        /// @tparam T Object class to return. MUST derive from Object.
+        /// @param objectName The name of the object to create.
+        /// @param x X position.
+        /// @param y Y position.
+        /// @param ...args Extra args
+        /// @return The object reference.
+        template <typename T = Object, typename... Args>
+        T* createObject(std::string objectName, double x, double y, std::vector<ParameterVariant> args);
+
+        /// @brief Destroys a game object.
+        /// @param object The object to destroy.
+        void destroyGameObject(Object *object);
+
+        /// @brief Destroys a game object.
+        /// @param id ID of the object to destroy.
+        void destroyGameObject(int id);
+
+        /// @brief Destroys the game objects that are pending to be destroyed. Should be called at the end of each frame.
+        void destroyGameObjects();
+
+        /// @brief Gets the next unique ID from the object manager. Used to uniquely identify each object.
+        /// @return The next ID.
+        unsigned int getNextObjectId();
+
+        /// @tparam T The type of game object to check.
+        /// @return True if the game object exists. False otherwise
+        template <typename T> bool gameObjectExists() const;
+
+        /*
+        /// @brief Creates a Menu object using the ObjectFactory. Sets the Menus owningPlayer for input handling.
+        /// @param playerInputIndex The index of the player input that should be used for this menu. Use 0 for default input.
+        /// @param objectName The name of the object to create.
+        /// @param x X position.
+        /// @param y Y position.
+        /// @param ...args Extra args
+        /// @return The menu object reference.
+        template <typename... Args>
+        Menu* createMenuObject(int playerInputIndex, std::string objectName, double x, double y, Args... args);
+
+        /// @brief Creates a Menu object using the ObjectFactory. Sets the Menus owningPlayer for input handling.
+        /// @param playerInputIndex The index of the player input that should be used for this menu. Use 0 for default input.
+        /// @param objectName The name of the object to create.
+        /// @param x X position.
+        /// @param y Y position.
+        /// @param ...args Extra args
+        /// @return The menu object reference.
+        template <typename... Args>
+        Menu* createMenuObject(int playerInputIndex, std::string objectName, double x, double y, std::vector<ParameterVariant> args);
+        */
+
+        #pragma endregion Game_Objects
+
         #pragma region Collision
+
+        /// @brief Checks if a collision is meeting with a specific game object type.
+        /// @tparam T The game object type to check.
+        /// @param objectBBox The bounding box.
+        /// @return True on collision, false otherwise.
+        template <typename T> bool placeMeetingGameObject(BBox objectBBox) const;
+
+        /// @brief Checks for a collision with a object type, and returns the first found instance if so.
+        /// @tparam T The game object type to check.
+        /// @param objectBBox The bounding box.
+        /// @return The Object on collision, NULL otherwise.
+        template <typename T> T* getInstancePlace(BBox objectBBox) const;
+
+        /// @brief Checks for and returns all meeting instances of an object type.
+        /// @tparam T The game object type to check.
+        /// @param objectBBox The bounding box.
+        /// @return The list of meeting game objects.
+        template <typename T> std::vector<T*> getInstancePlaceList(BBox objectBBox) const;
 
         #pragma endregion Collision
 
         #pragma region WrapperMethods
+
+        /// @brief Pulls a bitmap font from the asset manager.
+        /// @param name The font name.
+        /// @return The font, or nullptr.
+        BitmapFont* getBitmapFont(std::string name) const;
 
         /*
         /// @brief Pulls an animation from the animation manager.
@@ -92,10 +172,10 @@ class GameManager
         /// @return The animation info, or NULL.
         AnimationInfo* getAnimation(std::string name) const;
 
-        /// @brief Pulls a bitmap font from the asset manager.
-        /// @param name The font name.
-        /// @return The font, or nullptr.
-        BitmapFont* getBitmapFont(std::string name) const;
+        /// @brief Gives the given menu focus, removing focus from every other menu.
+        /// @param menu The menu to focus on.
+        /// @param focusOnWidget Whether to give a widget focus. 
+        void giveMenuFocus(Menu *menu, bool focusOnWidget);
         */
 
         #pragma endregion WrapperMethods
@@ -126,6 +206,8 @@ class GameManager
         #pragma endregion Getters
 
     private:
+        /// @brief Object's need to be able to call pendObjectForDestruction() when getting destroyed.
+        friend class Object;
     
         #pragma region Game_State
 
@@ -136,12 +218,47 @@ class GameManager
         /// @brief Resets the game data including game objects and the camera.
         void resetGameData();
 
+        #pragma endregion Game_State
+
+        #pragma region Game_Objects
+
         /// @brief Destroys all of the game objects.
         void clearGameObjects();
 
-        #pragma endregion Game_State
+        /// @brief Creates a basic object from the ObjectFactory, Adding the object to the ObjectManager.
+        /// @tparam ...Args Extra arg types.
+        /// @param objectName The name of the object to create.
+        /// @param x X position.
+        /// @param y Y position.
+        /// @param ...args Extra args
+        /// @return The object reference.
+        template <typename... Args>
+        Object* createBasicObject(std::string objectName, double x, double y, Args... args);
+
+        /// @brief Creates a basic object from the ObjectFactory, Adding the object to the ObjectManager.
+        /// @tparam ...Args Extra arg types.
+        /// @param objectName The name of the object to create.
+        /// @param x X position.
+        /// @param y Y position.
+        /// @param ...args Extra args
+        /// @return The object reference.
+        template <typename... Args>
+        Object* createBasicObject(std::string objectName, double x, double y, std::vector<ParameterVariant> args);
+
+        /// @brief Adds a game object to the object manager. This does NOT create the game object.
+        ///        If the object is a Player, adds it to the Players list.
+        ///        If the object is a Menu, adds it to the MenuManager.
+        /// @param object The object to add. This should not be NULL.
+        void addGameObject(Object *object);
+
+        /// @brief Pends a game object for deletion by adding it to the destroy list. The game object will be marked as destroyed.
+        /// @param object The game object to kill.
+        void pendObjectForDestruction(Object *object);
+
+        #pragma endregion Game_Objects
 
         Engine *engine = NULL;
+        ObjectManager *objectManager;
         Room *room = NULL;
         Camera *camera = NULL;
 
@@ -153,5 +270,7 @@ class GameManager
         //Debugging
         bool showFPS;
 };
+
+#include "gameManager.tpp"
 
 #endif
