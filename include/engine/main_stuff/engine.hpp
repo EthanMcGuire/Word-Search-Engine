@@ -20,7 +20,7 @@ class Engine
         ~Engine();
 
         /// @brief Initializes the engine. Initializing SDL, the window and render, subsystems, and other required classes.
-        /// @return bool True on success, false on failure.  
+        /// @return bool True on success, false on failure.
         bool initializeEngine();
 
         /// @brief Closes the engine, cleaning up any initialized resources.

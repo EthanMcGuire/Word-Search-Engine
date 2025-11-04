@@ -15,7 +15,7 @@ RenderableObject::RenderableObject(std::string name, GameManager* gameManager, d
     showCollision = false;
 
     renderBBox.setCollisionType(CollisionType::NONE);
-
+    
     cameraMovedEventListenerId = gameManager->getEventDispatcher()->addListener<EventCameraMoved>([this](EventCameraMoved *event) {
         this->cameraMovedCallback(event);
     });

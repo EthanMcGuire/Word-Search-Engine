@@ -10,7 +10,7 @@ void Engine::addEventListener(std::function<void(T*)> callback)
 {
     uint32_t listenerId;
 
-    listenerId = eventDispatcher.addListener(callback);
+    listenerId = eventDispatcher->addListener<T>(callback);
 
     eventListenerIds.push(listenerId);
 }

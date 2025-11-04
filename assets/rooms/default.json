@@ -24,12 +24,6 @@
         "tileBackground": true,
 
         "objects": [
-            {
-                "objectName": "",
-                "x": 0,
-                "y": 0,
-                "parameters": []
-            }
         ]
     }
 }

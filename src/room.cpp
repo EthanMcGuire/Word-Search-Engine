@@ -55,7 +55,7 @@ void from_json(const json& j, ObjectInfo& objectInfo)
     j.at("x").get_to(objectInfo.x);
     j.at("y").get_to(objectInfo.y);
 
-    /*
+
     //Get the object parameters
     if (!j["parameters"].is_array())
     {
@@ -66,10 +66,8 @@ void from_json(const json& j, ObjectInfo& objectInfo)
     {
         objectInfo.parameters.push_back(jsonToParameter(item));
     }
-    */
 }
 
-/*
 /// @brief Converts the json to a possible variant value.
 /// @param j The json containing the variant.
 /// @param return The variant value.
@@ -93,7 +91,6 @@ ParameterVariant jsonToParameter(const json& j)
         throw std::invalid_argument("Room: Unsupported JSON type for conversion to ParameterVariant.");
     }
 }
-*/
 
 Room::Room(AssetManager* assetManager, std::string roomName, int roomWidth, int roomHeight)
 {

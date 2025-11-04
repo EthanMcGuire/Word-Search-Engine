@@ -3,6 +3,7 @@
 #ifndef RENDERABLE_OBJECT_H
 #define RENDERABLE_OBJECT_H
 
+#include <SDL3/SDL.h>
 #include "object.hpp"
 #include "event.hpp"
 

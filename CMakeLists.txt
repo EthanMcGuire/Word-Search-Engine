@@ -36,6 +36,9 @@ target_sources(MyProgram
         src/objectManager.cpp
         src/parameterVariant.cpp
         src/objectFactory.cpp
+        src/objectDrawer.cpp
+        src/collisionDrawer.cpp
+        src/renderableObject.cpp
 )
 
 # Copy assets to build directory

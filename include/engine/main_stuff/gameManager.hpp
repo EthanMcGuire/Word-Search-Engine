@@ -19,6 +19,8 @@ class AudioController;
 class AssetManager;
 class EventDispatcher;
 class SDL_Renderer;
+class BitmapFont;
+class Object;
 
 class GameManager
 {
@@ -159,27 +161,6 @@ class GameManager
 
         #pragma endregion Collision
 
-        #pragma region WrapperMethods
-
-        /// @brief Pulls a bitmap font from the asset manager.
-        /// @param name The font name.
-        /// @return The font, or nullptr.
-        BitmapFont* getBitmapFont(std::string name) const;
-
-        /*
-        /// @brief Pulls an animation from the animation manager.
-        /// @param name The animation name.
-        /// @return The animation info, or NULL.
-        AnimationInfo* getAnimation(std::string name) const;
-
-        /// @brief Gives the given menu focus, removing focus from every other menu.
-        /// @param menu The menu to focus on.
-        /// @param focusOnWidget Whether to give a widget focus. 
-        void giveMenuFocus(Menu *menu, bool focusOnWidget);
-        */
-
-        #pragma endregion WrapperMethods
-
         #pragma region Getters
 
         /// @return True if the game is paused, false otherwise.
@@ -202,6 +183,18 @@ class GameManager
 
         /// @return The EventDispatcher. Used to add event listeners and dispatch events.
         EventDispatcher* getEventDispatcher() const;
+
+        /// @brief Pulls a bitmap font from the asset manager.
+        /// @param name The font name.
+        /// @return The font, or nullptr.
+        BitmapFont* getBitmapFont(std::string name) const;
+
+        /*
+        /// @brief Pulls an animation from the animation manager.
+        /// @param name The animation name.
+        /// @return The animation info, or NULL.
+        AnimationInfo* getAnimation(std::string name) const;
+        */
 
         #pragma endregion Getters
 
