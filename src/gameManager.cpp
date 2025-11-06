@@ -46,6 +46,15 @@ void GameManager::initializeGameManager()
     room = new Room(engine->getAssetManager(), "DEFAULT", Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
     camera = new CameraLerp(this, gmtl::Vec2d(0, 0), Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
     objectManager = new ObjectManager();
+
+    //Top level input events
+    engine->addSDLEventListener(SDL_EVENT_KEY_DOWN, [this](SDL_Event &e) {
+        this->keyboardCallback(e);
+    });
+
+    engine->addSDLEventListener(SDL_EVENT_KEY_UP, [this](SDL_Event &e) {
+        this->keyboardCallback(e);
+    });
 }
 
 #pragma region GameControl
@@ -139,7 +148,7 @@ void GameManager::drawGui(SDL_Renderer *renderer)
         std::string text = "FPS: ";
         text += std::to_string((int) floor(engine->getFPS()));
 
-        font->drawText(renderer, 0, 0, text);
+        font->drawText(renderer, 8, 8, text);
     }
 }
 
@@ -296,6 +305,45 @@ void GameManager::pendObjectForDestruction(Object *object)
 }
 
 #pragma endregion Game_Objects
+
+#pragma region Input
+
+/// @brief Keyboard callback for debugging purposes.
+/// @param e Event info.
+void GameManager::keyboardCallback(SDL_Event &e)
+{
+    if (e.key.type == SDL_EVENT_KEY_DOWN)
+    {
+        if (e.key.repeat > 0)
+        {
+            //Button held
+        }
+        else
+        {
+            //Button pressed
+            switch (e.key.key)
+            {
+                case SDLK_F1:
+                {
+                    showFPS = !showFPS;
+                }
+                break;
+
+                case SDLK_F2:
+                {
+                    ObjectDrawer::toggleGameObjectCollisionDisplays(objectManager);
+                }
+                break;
+            }
+        }
+    } 
+    else if (e.key.type == SDL_EVENT_KEY_UP)
+    {
+        //Button released
+    }
+}
+
+#pragma endregion Input
 
 #pragma region Getters
 

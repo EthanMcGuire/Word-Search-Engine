@@ -3,6 +3,7 @@
 #ifndef GAME_MANAGER_H
 #define GAME_MANAGER_H
 
+#include <SDL3/SDL_events.h>
 #include <queue>
 #include <string>
 #include <vector>
@@ -249,6 +250,14 @@ class GameManager
         void pendObjectForDestruction(Object *object);
 
         #pragma endregion Game_Objects
+
+        #pragma region Input
+
+        /// @brief Keyboard callback for debugging purposes.
+        /// @param e Event info.
+        void keyboardCallback(SDL_Event &e);
+
+        #pragma endregion Input
 
         Engine *engine = NULL;
         ObjectManager *objectManager;
