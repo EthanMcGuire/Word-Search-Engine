@@ -35,6 +35,18 @@ class Texture
         /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
         /// @param flip Whether to flip the texture horizontally or vertically.
         void render(SDL_Renderer *renderer, int x, int y, double xScale = 1.0, double yScale = 1.0, SDL_FRect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_FlipMode flip = SDL_FLIP_NONE) const;
+	
+        /// @brief Renders the texture to the given renderer, centering it.
+        /// @param renderer The renderer to render to.
+        /// @param x X location on the viewport.
+        /// @param y Y location on the viewport.
+        /// @param xScale Width scale of texture destination.
+        /// @param yScale Height scale of texture destination.
+        /// @param clip Portion of the texture to render.
+        /// @param angle Image rotation angle.
+        /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
+        /// @param flip Whether to flip the texture horizontally or vertically.
+void renderCentered(SDL_Renderer *renderer, int x, int y, double xScale = 1.0, double yScale = 1.0, SDL_FRect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_FlipMode flip = SDL_FLIP_NONE) const;
 
         /// @brief Renders the texture to the given renderer.
         /// @param renderer The renderer to render to.

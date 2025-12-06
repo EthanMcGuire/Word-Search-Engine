@@ -1,9 +1,11 @@
 #include "countdownTimer.hpp"
+#include <SDL3/SDL_log.h>
 #include <algorithm>
 
 CountdownTimer::CountdownTimer()
 {
     totalTime = 0;
+    currentTimeChange = 0;
     started = false;
     paused = true;
 
@@ -120,7 +122,15 @@ void CountdownTimer::removeTime(int removeTime)
 /// @return The remaining time in milliseconds.
 int CountdownTimer::getRemainingTime()
 {
+    if (!started) return 0;
+
     return std::max(totalTime - ((int)timer.getTicks()), 0);
+}
+
+/// @return The current time change for the timer in milliseconds.
+int CountdownTimer::getCurrentTimeChange()
+{
+	return currentTimeChange;
 }
 
 #pragma endregion Timer

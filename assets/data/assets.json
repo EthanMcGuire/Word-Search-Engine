@@ -12,6 +12,10 @@
             "filePath": "assets/texture/starset.png",
             "assetType": "texture"  
         },
+	{
+            "filePath": "assets/texture/clock.png",
+            "assetType": "texture"  
+        },
         {
             "filePath": "assets/font/openSans/fntOpenSans.fnt",
             "assetType": "bitmap"   

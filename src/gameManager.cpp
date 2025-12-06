@@ -187,9 +187,18 @@ bool GameManager::loadRoom()
     //Create game objects
     std::vector<ObjectInfo> objects = room->getRoomObjects();
 
-    for (const auto& object : objects)
+    try
     {
-        createObject(object.objectName, object.x, object.y, object.parameters);
+	    for (const auto& object : objects)
+	    {
+		createObject(object.objectName, object.x, object.y, object.parameters);
+	    }
+    }
+    catch (std::exception& ex)
+    {
+	    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "GameManager: Failed to create objects when loading room. %s", ex.what());
+
+	    return false;
     }
 
     //Play music

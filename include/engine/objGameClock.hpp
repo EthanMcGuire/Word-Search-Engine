@@ -3,8 +3,18 @@
 
 #include "renderableObject.hpp"
 #include "countdownTimer.hpp"
+#include <vector>
 
 class GameManager;
+class BitmapFont;
+class Texture;
+
+struct TimeChange
+{
+	double offsetY;
+	int time;
+	int delay;
+};
 
 class ObjGameClock : public RenderableObject
 {
@@ -45,10 +55,23 @@ class ObjGameClock : public RenderableObject
         /// @param addTime Time to remove in milliseconds.
         void removeTime(int removeTime);
 
+	/// @brief Adds a time change to the timeChanges vector to display on the GUI.
+	/// @param time The change in time for this time change.
+	void addTimeChange(int time);
+
         #pragma endregion Timer
 
     private:
+	const int TIME_OFFSET_X = 16;
+	const int TIME_CHANGE_OFFSET_Y = 20;
+	const float TIME_CHANGE_OFFSET_LERP = 0.2;
+	const int TIME_CHANGE_MOVE_DELAY_MS = 1000;
+
         CountdownTimer timer;
+	BitmapFont *font;
+	Texture *clockTexture;
+
+	std::vector<TimeChange> timeChanges;
 };
 
 #endif

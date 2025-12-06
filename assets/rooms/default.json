@@ -24,6 +24,12 @@
         "tileBackground": true,
 
         "objects": [
+		{
+			"objectName": "objGameClock",
+			"x": 32,
+			"y": 32,
+			"parameters": []
+		}
         ]
     }
 }

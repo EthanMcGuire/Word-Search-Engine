@@ -6,6 +6,7 @@
 //#include "solid.hpp"
 #include "config.hpp"
 #include <SDL3/SDL_log.h>
+#include "objGameClock.hpp"
 
 //Client headers
 /*
@@ -37,6 +38,10 @@ Object* ObjectFactory::createObject(GameManager *gameManager, std::string object
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "ObjectFactory: Creating game object of type %s...", objectName.c_str());
 
+    if (objectName == "objgameclock")
+    {
+	    return new ObjGameClock(gameManager, x, y);
+    }
     /*
     //Client objects
     #ifdef CLIENT
