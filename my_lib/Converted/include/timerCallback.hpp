@@ -36,7 +36,7 @@ class TimerCallback : public Timer
     private:
         unsigned int callbackTimeMs;        //Time at which to call the callback
         bool loop;                          //Whether the timer loops after callback
-        std::function<void()> callback;     //Callback function to call
+        std::function<void()> callback;
 };
 
 #endif

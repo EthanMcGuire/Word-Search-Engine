@@ -4,9 +4,7 @@
 #define COUNTDOWN_TIMER_H
 
 #include "timer.hpp"
-
-//TODO
-//Add a callback for when the timer completes!!!
+#include <functional>
 
 class CountdownTimer
 {
@@ -16,9 +14,16 @@ class CountdownTimer
 
         /// @brief Updates the timer.
         /// @param deltaTime Time change between last and current frame.
-        /// @return True on success, false on failure.
-        bool update(double deltaTime);
-        void draw();
+        void update(double deltaTime);
+
+        /// @brief Sets the callback function to call once the clock finishes counting down.
+        /// @param callback The callback function.
+        void setCallbackFunction(std::function<void()> callback);
+
+        /// @brief Clears the callback function.
+        void clearCallbackFunction();
+
+        #pragma region Timer
 
         /// @brief Starts the countdown timer, resetting it to the total time.
         void startTimer();
@@ -41,10 +46,12 @@ class CountdownTimer
         /// @param addTime Time to remove in milliseconds.
         void removeTime(int removeTime);
 
-    private:
-
         /// @return The remaining time in milliseconds.
         int getRemainingTime();
+
+        #pragma endregion Timer
+
+    private:
 
         const int DELTA_TIME_CHANGE = 30 * 1000;    //1 second for the timer to change by 30 seconds
 
@@ -54,6 +61,8 @@ class CountdownTimer
 
         bool started;
         bool paused;
+
+        std::function<void()> callback;
 };
 
 #endif

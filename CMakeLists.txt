@@ -5,7 +5,6 @@ project(MyProgram)
 add_executable(MyProgram)
 
 target_include_directories(MyProgram PRIVATE include/engine)
-target_include_directories(MyProgram PRIVATE include/engine/main_stuff)
 target_include_directories(MyProgram PRIVATE include/external)
 
 target_sources(MyProgram

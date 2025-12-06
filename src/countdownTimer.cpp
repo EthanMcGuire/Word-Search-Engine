@@ -6,13 +6,19 @@ CountdownTimer::CountdownTimer()
     totalTime = 0;
     started = false;
     paused = true;
+
+    callback = nullptr;
 }
 
 /// @brief Updates the timer.
 /// @param deltaTime Time change between last and current frame.
-/// @return True on success, false on failure.
-bool CountdownTimer::update(double deltaTime)
+void CountdownTimer::update(double deltaTime)
 {
+    if (!started || paused)
+    {
+        return;
+    }
+
     if (currentTimeChange != 0)
 	{
 		double change;
@@ -33,30 +39,33 @@ bool CountdownTimer::update(double deltaTime)
 		}
 	}
 
-    if (started)
+    if (getRemainingTime() <= 0)
     {
-        if (getRemainingTime() <= 0)
-        {
-            timer.stop();
-            
-            started = false;
+        timer.stop();
+        
+        started = false;
 
-            //Timer done!!
-            //Call callback
+        if (callback != nullptr)
+        {
+            callback();
         }
     }
-
-    return true;
 }
 
-void CountdownTimer::draw()
+/// @brief Sets the callback function to call.
+/// @param callback The callback function.
+void CountdownTimer::setCallbackFunction(std::function<void()> callback)
 {
-    //Draw the clock
-	
-	//Draw remaining time
-	
-	//Draw current change time (if not 0)
+    this->callback = std::move(callback);
 }
+
+/// @brief Clears the callback function.
+void CountdownTimer::clearCallbackFunction()
+{
+    callback = nullptr;
+}
+
+#pragma region Timer
 
 /// @brief Starts the countdown timer, resetting it to the total time.
 void CountdownTimer::startTimer()
@@ -113,3 +122,5 @@ int CountdownTimer::getRemainingTime()
 {
     return std::max(totalTime - ((int)timer.getTicks()), 0);
 }
+
+#pragma endregion Timer
