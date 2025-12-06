@@ -10,17 +10,10 @@
 
 Engine::Engine()
 {
-    gameManager = new GameManager(this);
-    rng = new Random();
 }
 
 Engine::~Engine()
 {
-    delete gameManager;
-    delete rng;
-
-    gameManager = NULL;
-    rng = NULL;
 }
 
 /// @brief Initializes the window and renderer.
@@ -52,6 +45,8 @@ bool Engine::initializeEngine()
         return false;
     }
 
+    rng = new Random();
+
     //Audio
     audioController = new AudioController();
 
@@ -79,6 +74,9 @@ bool Engine::initializeEngine()
         this->sdlQuitCallback(e);
     });
 
+    //Game manager
+    gameManager = new GameManager(this);
+
     SDL_Log("Engine: Engine successfully initialized.");
 
     return true;
@@ -86,33 +84,10 @@ bool Engine::initializeEngine()
 
 void Engine::closeEngine()
 {
-    if (renderer != NULL)
+    if (gameManager != NULL)
     {
-        SDL_DestroyRenderer(renderer);
-        renderer = NULL;
-    }
-
-    if (window != NULL)
-    {
-        SDL_DestroyWindow(window);
-        window = NULL;
-    }
-
-    if (audioController != NULL)
-    {
-        delete audioController;
-        audioController = NULL;
-    }
-
-    //Free assets
-    if (assetManager != NULL)
-    {
-        assetManager->clearAssets();
-        assetManager->displayAssetInfo();
-
-        delete assetManager;
-        assetManager = NULL;
-    }
+	   delete gameManager;
+    } 
 
     //Remove event listeners
     if (eventDispatcher != NULL)
@@ -121,7 +96,35 @@ void Engine::closeEngine()
         eventDispatcher->removeSDLListenersByIds(sdlEventListenerIds);
     
         delete eventDispatcher;
-        eventDispatcher = NULL;
+    }
+    
+    //Free assets
+    if (assetManager != NULL)
+    {
+        assetManager->clearAssets();
+        assetManager->displayAssetInfo();
+
+        delete assetManager;
+    }
+
+    if (audioController != NULL)
+    {
+        delete audioController;
+    }
+
+    if (rng != NULL)
+    {
+	delete rng;
+    }
+
+    if (renderer != NULL)
+    {
+        SDL_DestroyRenderer(renderer);
+    }
+
+    if (window != NULL)
+    {
+        SDL_DestroyWindow(window);
     }
 
     SDL_Quit();

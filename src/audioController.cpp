@@ -57,7 +57,7 @@ bool AudioController::update()
 
         if (queuedBytes == -1)
         {
-            SDL_Log("AudioController: Failed to get queued bytes for music: %d", currentMusic);
+            SDL_Log("AudioController: Failed to get queued bytes for music: %s", currentMusic.c_str());
 
             return false;
         }
@@ -125,7 +125,7 @@ bool AudioController::stopMusic()
 
     if (!SDL_ClearAudioStream(sound->stream))
     {
-        SDL_Log("AudioController: Failed to clear audio stream for music source: %d", currentMusic);
+        SDL_Log("AudioController: Failed to clear audio stream for music source: %s", currentMusic.c_str());
 
         return false;
     }
@@ -203,6 +203,8 @@ size_t AudioController::getSoundCount()
 /// @brief Frees all of the sound assets.
 void AudioController::clearSoundAssets()
 {
+    SDL_Log("AudioController: Freeing all sound assets...");
+
     for (auto it = musics.begin(); it != musics.end(); it++)
     {
         freeSound(it->second);

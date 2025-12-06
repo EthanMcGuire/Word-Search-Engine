@@ -43,10 +43,13 @@ target_sources(MyProgram
 # Copy assets to build directory
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/assets" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-# Copy SDL libaries to build directory
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3.dll" DESTINATION "${CMAKE_BINARY_DIR}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3_ttf.dll" DESTINATION "${CMAKE_BINARY_DIR}")
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3_image.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+# Copy link libraries for windows
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	# Copy SDL libaries to build directory
+	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3_ttf.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+	file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/lib/SDL3_image.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+endif()
 
 # Build lib
 find_package(SDL3 REQUIRED)
