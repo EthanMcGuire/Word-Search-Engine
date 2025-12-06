@@ -1,9 +1,9 @@
 {
     "room": {
         "name": "TitleScreen",
-        "musicName": "crickets",
-        "width": 640,
-        "height": 360,
+        "musicName": "calm_track",
+        "width": 960,
+        "height": 540,
 
         "cameraStartX": 0,
         "cameraStartY": 0,
@@ -13,7 +13,7 @@
         "bgColorB": 0,
         "bgColorA": 255,
 
-        "bgTextureName": "dungeon",
+        "bgTextureName": "Starset",
 
         "bgAngle": 0,
         "bgScrollSpeedX": 0,
@@ -25,9 +25,9 @@
 
         "objects": [
             {
-                "objectName": "titlescreen",
-                "x": 0,
-                "y": 0,
+                "objectName": "objtitlescreen",
+                "x": 480,
+                "y": 270,
                 "parameters": []
             }
         ]

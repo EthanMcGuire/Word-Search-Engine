@@ -56,7 +56,7 @@ class CountdownTimer
 
     private:
 
-        const int DELTA_TIME_CHANGE = 10 * 1000;    //1 second for the timer to change by 10 seconds
+        const int DELTA_TIME_CHANGE = 20 * 1000;    //1 second for the timer to change by 20 seconds
 
         Timer timer;
         int totalTime;

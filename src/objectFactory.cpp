@@ -7,6 +7,7 @@
 #include "config.hpp"
 #include <SDL3/SDL_log.h>
 #include "objGameClock.hpp"
+#include "objTitleScreen.hpp"
 
 //Client headers
 /*
@@ -41,6 +42,10 @@ Object* ObjectFactory::createObject(GameManager *gameManager, std::string object
     if (objectName == "objgameclock")
     {
 	    return new ObjGameClock(gameManager, x, y);
+    }
+    else if (objectName == "objtitlescreen")
+    {
+	    return new ObjTitleScreen(gameManager, x, y);
     }
     /*
     //Client objects

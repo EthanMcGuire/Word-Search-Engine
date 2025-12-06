@@ -34,6 +34,7 @@ ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : Rende
     addTime(15000);
     addTime(-10000);
     addTime(12000);
+    addTime(100000);
 }
 
 /// @brief Updates the Object.
@@ -73,7 +74,7 @@ void ObjGameClock::renderGui(SDL_Renderer *renderer)
 	remainingTime = (int) SDL_ceil(timer.getRemainingTime() / 1000.f);
 
 	text = std::to_string(remainingTime);
-	font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1], text, {255, 255, 255, 255}, TextAlign::LEFT, TextAlign::CENTER);
+	font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1], text, {255, 255, 255, 255}, TextAlign::RIGHT, TextAlign::CENTER);
 	
 	//Draw time changes
 	for (TimeChange timeChange : timeChanges)
@@ -99,7 +100,7 @@ void ObjGameClock::renderGui(SDL_Renderer *renderer)
 			color.a = (int) (255.0 * (timeChange.offsetY / TIME_CHANGE_OFFSET_Y));
 		}
 
-		font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1] + timeChange.offsetY, text, color, TextAlign::LEFT, TextAlign::CENTER);
+		font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1] + timeChange.offsetY, text, color, TextAlign::RIGHT, TextAlign::CENTER);
 
 	}
 }

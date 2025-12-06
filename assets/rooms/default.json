@@ -26,7 +26,7 @@
         "objects": [
 		{
 			"objectName": "objGameClock",
-			"x": 32,
+			"x": 896,
 			"y": 32,
 			"parameters": []
 		}

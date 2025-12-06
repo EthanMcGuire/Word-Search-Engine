@@ -62,7 +62,7 @@ class ObjGameClock : public RenderableObject
         #pragma endregion Timer
 
     private:
-	const int TIME_OFFSET_X = 16;
+	const int TIME_OFFSET_X = 56;
 	const int TIME_CHANGE_OFFSET_Y = 20;
 	const float TIME_CHANGE_OFFSET_LERP = 0.2;
 	const int TIME_CHANGE_MOVE_DELAY_MS = 1000;

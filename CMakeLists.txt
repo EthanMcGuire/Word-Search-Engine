@@ -39,6 +39,7 @@ target_sources(MyProgram
         src/collisionDrawer.cpp
         src/renderableObject.cpp
 	src/objGameClock.cpp
+	src/objTitleScreen.cpp
 )
 
 # Copy assets to build directory
