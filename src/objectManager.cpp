@@ -62,11 +62,15 @@ void ObjectManager::freeGameObjects()
     {
         delete (*it);
         (*it) = NULL;
+
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "ObjectManager: Deleted game object.");
     }
 
     gameObjects.clear();
     gameObjectMap.clear();
     std::queue<Object*>().swap(gameObjectsToDestroy);
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "ObjectManager: Finished deleting game objects.");
 }
 
 /// @brief Adds a game object to be destroyed.

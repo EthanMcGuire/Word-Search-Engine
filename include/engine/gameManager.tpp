@@ -4,7 +4,7 @@
 //#include "player.hpp"
 //#include "menu.hpp"
 //#include "menuManager.hpp"
-#include <SDL3/SDL_Log.h>
+#include <SDL3/SDL_log.h>
 #include <typeinfo>
 
 #pragma region Game_Objects

@@ -105,7 +105,7 @@ bool GameManager::update(double deltaTime)
 
         if (!loadRoom())
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "GameManager: Failed to load room %s.", nextRoom);
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "GameManager: Failed to load room %s.", nextRoom.c_str());
 
             return false;
         }
@@ -204,7 +204,7 @@ bool GameManager::loadRoom()
     {
         if (!audioController->playMusic(musicName))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "GameManager: Failed to play music for the room: %s", nextRoom);
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "GameManager: Failed to play music for the room: %s", nextRoom.c_str());
 
             return false;
         }
