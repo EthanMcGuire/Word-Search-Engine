@@ -8,14 +8,6 @@
 #include "timer.hpp"
 #include "SDL3_ttf/SDL_ttf.h"
 
-Engine::Engine()
-{
-}
-
-Engine::~Engine()
-{
-}
-
 /// @brief Initializes the window and renderer.
 /// @return bool True on success, false if creating the window and renderer fails.  
 bool Engine::initializeEngine()
@@ -70,7 +62,7 @@ bool Engine::initializeEngine()
     //Set up events
     eventDispatcher = new EventDispatcher();
 
-    addSDLEventListener(SDL_EVENT_QUIT, [this](SDL_Event &e) {
+    eventDispatcher->addSDLListener(SDL_EVENT_QUIT, [this](SDL_Event &e) {
         this->sdlQuitCallback(e);
     });
 
@@ -92,9 +84,6 @@ void Engine::closeEngine()
     //Remove event listeners
     if (eventDispatcher != NULL)
     {
-        eventDispatcher->removeListenersByIds(eventListenerIds);
-        eventDispatcher->removeSDLListenersByIds(sdlEventListenerIds);
-    
         delete eventDispatcher;
     }
     
@@ -230,18 +219,6 @@ void Engine::mainLoop()
 
         countedFrames++;
     }
-}
-
-/// @brief Adds a SDL listener callback.
-/// @param type The type of SDL_Event to listen for. 
-/// @param callback The method to call once the event is dispatched.
-void Engine::addSDLEventListener(Uint32 type, std::function<void(SDL_Event&)> callback)
-{
-    uint32_t listenerId;
-
-    listenerId = eventDispatcher->addSDLListener(type, callback);
-
-    sdlEventListenerIds.push(listenerId);
 }
 
 /// @brief Handles SDL events.

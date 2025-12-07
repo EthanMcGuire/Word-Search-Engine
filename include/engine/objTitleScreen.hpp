@@ -10,14 +10,15 @@ class ObjTitleScreen : public RenderableObject
 {
 	public:
 		ObjTitleScreen(GameManager *gameManager, double x, double y);
+		~ObjTitleScreen();
 
 		void renderGui(SDL_Renderer *renderer) override;
 
-		//TODO
-		//Callback
-		//void startGame():
 	private:
+		void mouseCallback(SDL_Event &e);
+
 		BitmapFont *font;
+		uint32_t mouseEventListenerId;
 
 };
 

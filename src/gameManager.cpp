@@ -5,7 +5,7 @@
 #include "room.hpp"
 #include "cameraLerp.hpp"
 #include "config.hpp"
-
+#include "eventDispatcher.hpp"
 #include "objectFactory.hpp"
 #include "objectManager.hpp"
 #include "objectDrawer.hpp"
@@ -48,11 +48,11 @@ void GameManager::initializeGameManager()
     objectManager = new ObjectManager();
 
     //Top level input events
-    engine->addSDLEventListener(SDL_EVENT_KEY_DOWN, [this](SDL_Event &e) {
+    getEventDispatcher()->addSDLListener(SDL_EVENT_KEY_DOWN, [this](SDL_Event &e) {
         this->keyboardCallback(e);
     });
 
-    engine->addSDLEventListener(SDL_EVENT_KEY_UP, [this](SDL_Event &e) {
+    getEventDispatcher()->addSDLListener(SDL_EVENT_KEY_UP, [this](SDL_Event &e) {
         this->keyboardCallback(e);
     });
 }

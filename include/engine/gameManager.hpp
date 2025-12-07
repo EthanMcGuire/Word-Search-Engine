@@ -116,28 +116,6 @@ class GameManager
         /// @return True if the game object exists. False otherwise
         template <typename T> bool gameObjectExists() const;
 
-        /*
-        /// @brief Creates a Menu object using the ObjectFactory. Sets the Menus owningPlayer for input handling.
-        /// @param playerInputIndex The index of the player input that should be used for this menu. Use 0 for default input.
-        /// @param objectName The name of the object to create.
-        /// @param x X position.
-        /// @param y Y position.
-        /// @param ...args Extra args
-        /// @return The menu object reference.
-        template <typename... Args>
-        Menu* createMenuObject(int playerInputIndex, std::string objectName, double x, double y, Args... args);
-
-        /// @brief Creates a Menu object using the ObjectFactory. Sets the Menus owningPlayer for input handling.
-        /// @param playerInputIndex The index of the player input that should be used for this menu. Use 0 for default input.
-        /// @param objectName The name of the object to create.
-        /// @param x X position.
-        /// @param y Y position.
-        /// @param ...args Extra args
-        /// @return The menu object reference.
-        template <typename... Args>
-        Menu* createMenuObject(int playerInputIndex, std::string objectName, double x, double y, std::vector<ParameterVariant> args);
-        */
-
         #pragma endregion Game_Objects
 
         #pragma region Collision
