@@ -86,7 +86,7 @@ void Engine::closeEngine()
     {
         delete eventDispatcher;
     }
-    
+
     //Free assets
     if (assetManager != NULL)
     {
@@ -95,7 +95,7 @@ void Engine::closeEngine()
 
         delete assetManager;
     }
-
+    
     if (audioController != NULL)
     {
         delete audioController;

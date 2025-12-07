@@ -29,6 +29,10 @@ class ObjGameClock : public RenderableObject
         /// @param renderer The renderer to draw to.
         void renderGui(SDL_Renderer *renderer) override;
 
+	/// @brief Sets the callback function to call once the clock reaches 0.
+	/// @param callback The callback function.
+	void setCallbackFunction(std::function<void()> callback);
+
         /// @brief Called when the countdown timer finishes. Initiates the game over sequence.
         void timerCompleted();
 

@@ -16,5 +16,5 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 
 void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 {
-	font->drawText(renderer, 16, 32, "WORD SEARCH BOX");
+	//font->drawText(renderer, 16, 32, "WORD SEARCH BOX");
 }

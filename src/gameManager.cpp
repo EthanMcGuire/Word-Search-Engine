@@ -16,7 +16,7 @@ GameManager::GameManager(Engine *engine)
     this->engine = engine;
 
     gamePaused = false;
-    showFPS = true;
+    showFPS = false;
 }
 
 GameManager::~GameManager()
@@ -130,7 +130,7 @@ void GameManager::draw(SDL_Renderer *renderer)
 void GameManager::drawGui(SDL_Renderer *renderer)
 {
     //Default font
-    BitmapFont *font = getAssetManager()->getBitmap("fntOpenSans");
+    BitmapFont *font = getAssetManager()->getBitmap("fntOpenSansSmall");
 
     if (font == NULL)
     {
@@ -148,7 +148,7 @@ void GameManager::drawGui(SDL_Renderer *renderer)
         std::string text = "FPS: ";
         text += std::to_string((int) floor(engine->getFPS()));
 
-        font->drawText(renderer, 8, 8, text);
+        font->drawTextAligned(renderer, 956, 4, text, {255, 255, 255, 255}, TextAlign::RIGHT, TextAlign::TOP);
     }
 }
 

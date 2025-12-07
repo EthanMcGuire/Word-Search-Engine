@@ -1,3 +1,6 @@
+-NOTE
+	-Max word is 31 characters long!
+
 -GUI should be small as grid will take a lot of space with more letters
 -Game objects for managing game data:
     -Stats

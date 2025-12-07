@@ -203,6 +203,8 @@ size_t AudioController::getSoundCount()
 /// @brief Frees all of the sound assets.
 void AudioController::clearSoundAssets()
 {
+    if (musics.empty() && sounds.empty()) return;
+
     SDL_Log("AudioController: Freeing all sound assets...");
 
     for (auto it = musics.begin(); it != musics.end(); it++)

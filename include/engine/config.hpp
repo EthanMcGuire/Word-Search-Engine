@@ -22,10 +22,12 @@ namespace Config
 #ifdef __linux__
     static const std::string ROOM_PATH = "assets/rooms"; 
     static const std::string ASSET_PATH = "assets/data/assets.json"; 
+    static const std::string WORDS_PATH = "assets/data/words_alpha.txt"; 
     //static const std::string ANIMATION_PATH = "resources/data/animations.json";
 #else
     static const std::string ROOM_PATH = "assets\\rooms"; 
     static const std::string ASSET_PATH = "assets\\data\\assets.json"; 
+    static const std::string WORDS_PATH = "assets\\data\\words_alpha.txt"; 
     //static const std::string ANIMATION_PATH = "resources\\data\\animations.json";
 #endif
 

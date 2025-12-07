@@ -24,17 +24,9 @@ ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : Rende
 	    throw std::runtime_error("ObjGameClock: Failed to load clock texture.");
     }
 
-    timer.setCallbackFunction([this](void) {
-        this->timerCompleted();
-    });
 
     setTime(10000);
     startTimer();
-
-    addTime(15000);
-    addTime(-10000);
-    addTime(12000);
-    addTime(100000);
 }
 
 /// @brief Updates the Object.
@@ -103,6 +95,11 @@ void ObjGameClock::renderGui(SDL_Renderer *renderer)
 		font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1] + timeChange.offsetY, text, color, TextAlign::RIGHT, TextAlign::CENTER);
 
 	}
+}
+
+void ObjGameClock::setCallbackFunction(std::function<void()> callback)
+{
+	timer.setCallbackFunction(callback);
 }
 
 /// @brief Called when the countdown timer finishes. Initiates the game over sequence.
