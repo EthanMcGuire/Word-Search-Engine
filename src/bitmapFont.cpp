@@ -214,6 +214,19 @@ void BitmapFont::drawText(SDL_Renderer *renderer, int x, int y, std::string text
     drawTextAligned(renderer, x, y, text, color);
 }
 
+void BitmapFont::drawTextOutlined(SDL_Renderer *renderer, int x, int y, std::string text, SDL_Color color, SDL_Color outlineColor, TextAlign hAlign, TextAlign vAlign)
+{
+    drawTextAligned(renderer, x-1, y-1, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x, y-1, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x+1, y-1, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x-1, y, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x+1, y, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x-1, y+1, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x, y+1, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x+1, y+1, text, outlineColor, hAlign, vAlign);
+    drawTextAligned(renderer, x, y, text, color, hAlign, vAlign);
+}
+
 /// @brief Draws the given text with line width and separation.
 /// @param renderer The renderer to draw to.
 /// @param x The x position to draw at. Relative to the viewport.

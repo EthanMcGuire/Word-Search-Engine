@@ -42,6 +42,7 @@ target_sources(MyProgram
 	src/objTitleScreen.cpp
 	src/objWordSearchController.cpp
 	src/objWordSearchBox.cpp
+	src/nineSlice.cpp
 )
 
 # Copy assets to build directory

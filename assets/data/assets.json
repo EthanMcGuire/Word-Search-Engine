@@ -16,6 +16,12 @@
             "filePath": "assets/texture/clock.png",
             "assetType": "texture"  
         },
+	{
+            "filePath": "assets/texture/wordSearchBox.png",
+            "assetType": "atlas",
+ 	    "spriteWidth": 8,
+	    "spriteHeight": 8  
+        },
         {
             "filePath": "assets/font/openSans/fntOpenSans.fnt",
             "assetType": "bitmap"   

@@ -15,7 +15,7 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 {
 	loadWords(Config::WORDS_PATH);
 
-	font = gameManager->getAssetManager()->getBitmap("fntOpenSansOutline");
+	font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
 
 	if (font == NULL)
 	{
@@ -52,6 +52,7 @@ void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 	}	
 
 	font->drawTextAligned(renderer, 4, 4, text, {255, 255, 255, 255}, TextAlign::LEFT, TextAlign::TOP);
+	font->drawTextOutlined(renderer, 4, 4, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
 }
 
 void ObjWordSearchController::gameClockCompletedCallback()
