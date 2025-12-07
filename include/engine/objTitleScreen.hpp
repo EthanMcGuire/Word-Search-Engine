@@ -1,5 +1,5 @@
-#ifndef TITLE_SCREEN_H
-#define TITLE_SCREEN_H
+#ifndef OBJ_TITLE_SCREEN_H
+#define OBJ_TITLE_SCREEN_H
 
 #include "renderableObject.hpp"
 

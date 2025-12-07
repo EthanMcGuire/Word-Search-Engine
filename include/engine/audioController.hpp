@@ -101,11 +101,6 @@ class AudioController
 
         #pragma endregion SoundLoading 
 
-        /*
-        const char* MUSIC_PATH[MUSIC_COUNT] = {"assets\\audio\\music\\calm_track.wav", "assets\\audio\\music\\crickets.wav"};
-        const char* SOUND_PATH[SOUND_COUNT] = {"assets\\audio\\music\\calm_track.wav", "assets\\audio\\music\\crickets.wav"};
-        */
-
         SDL_AudioDeviceID audio_device;
         std::unordered_map<std::string, Sound*> musics;
         std::unordered_map<std::string, Sound*> sounds;

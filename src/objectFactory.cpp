@@ -8,6 +8,8 @@
 #include <SDL3/SDL_log.h>
 #include "objGameClock.hpp"
 #include "objTitleScreen.hpp"
+#include "objWordSearchController.hpp"
+#include "objWordSearchBox.hpp"
 
 //Client headers
 /*
@@ -46,6 +48,14 @@ Object* ObjectFactory::createObject(GameManager *gameManager, std::string object
     else if (objectName == "objtitlescreen")
     {
 	    return new ObjTitleScreen(gameManager, x, y);
+    }
+    else if (objectName == "objwordsearchcontroller")
+    {
+	    return new ObjWordSearchController(gameManager, x, y);
+    }
+    else if (objectName == "objwordsearchbox")
+    {
+	    return new ObjWordSearchBox(gameManager, x, y);
     }
     /*
     //Client objects

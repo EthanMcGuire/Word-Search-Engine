@@ -40,6 +40,8 @@ target_sources(MyProgram
         src/renderableObject.cpp
 	src/objGameClock.cpp
 	src/objTitleScreen.cpp
+	src/objWordSearchController.cpp
+	src/objWordSearchBox.cpp
 )
 
 # Copy assets to build directory
