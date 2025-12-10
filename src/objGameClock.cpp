@@ -23,10 +23,6 @@ ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : Rende
     {
 	    throw std::runtime_error("ObjGameClock: Failed to load clock texture.");
     }
-
-
-    setTime(10000);
-    startTimer();
 }
 
 /// @brief Updates the Object.

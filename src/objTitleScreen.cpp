@@ -26,7 +26,7 @@ ObjTitleScreen::~ObjTitleScreen()
 
 void ObjTitleScreen::renderGui(SDL_Renderer *renderer)
 {
-	font->drawTextAligned(renderer, pos[0], pos[1], "PRESS START", {255, 255, 255, 255}, TextAlign::CENTER, TextAlign::CENTER);
+	font->drawTextAligned(renderer, pos[0], pos[1], "PRESS LEFT MOUSE BUTTON", {255, 255, 255, 255}, TextAlign::CENTER, TextAlign::CENTER);
 }
 
 void ObjTitleScreen::mouseCallback(SDL_Event &e)
