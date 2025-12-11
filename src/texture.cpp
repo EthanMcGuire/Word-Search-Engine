@@ -185,6 +185,18 @@ void Texture::setBlendMode(SDL_BlendMode blending)
     SDL_SetTextureBlendMode(texture, blending);
 }
 
+void Texture::setScaleMode(SDL_ScaleMode scaleMode)
+{
+    if (texture == NULL)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Texture: Attempted to set scale mode for NULL texture! Call loadTexture() to load a texture.");
+
+        return;
+    }
+
+    SDL_SetTextureScaleMode(texture, scaleMode);
+}
+
 /// @brief Sets the alpha for the texture.
 /// @param alpha Alpha, from 0 to 255.
 void Texture::setAlpha(Uint8 alpha)

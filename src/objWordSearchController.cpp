@@ -23,31 +23,24 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	}
 	
 	wordSearchBox = gameManager->createObject<ObjWordSearchBox>("objWordSearchBox", 480, 270);
+	wordSearchBox->setReadyCallback(std::bind(&ObjWordSearchController::boxReadyCallback, this));
+
 	gameClock = gameManager->createObject<ObjGameClock>("objGameClock", 896, 20);
 	gameClock->setCallbackFunction(std::bind(&ObjWordSearchController::gameClockCompletedCallback, this));
 	gameClock->setTime(STARTING_TIME);
 	gameClock->startTimer();
 
-	level = 0;
-	score = 0;
-	difficulty = 0;
-
-	startState(WordSearchState::WORD_SEARCH_STATE_START_NEXT_LEVEL);
+	resetGameData();	
+	startNextLevel();
 }
 
 void ObjWordSearchController::update(double deltaTime)
 {
 	switch (state)
 	{
-		case WordSearchState::WORD_SEARCH_STATE_START_NEXT_LEVEL:
-		{
-			//Nothing to do
-		}
-		break;
-		
 		case WordSearchState::WORD_SEARCH_STATE_WAITING_FOR_BOX:
 		{
-			//Waiting for a callback?
+			//Waiting for a callback
 		}
 		break;
 
@@ -60,6 +53,9 @@ void ObjWordSearchController::update(double deltaTime)
 		case WordSearchState::WORD_SEARCH_STATE_GAME_OVER:
 		{
 			//Wait for player to retry
+			//Upon retry:
+			//resetGameData();	
+			//startNextLevel();
 		}
 		break;
 	}
@@ -73,55 +69,25 @@ void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 	text += std::string("SCORE: ") + std::to_string(score) + "/n";
 	text += "WORDS/n";
 
-	for (std::string word : currentWords)
+	//Only draw words if we are in an active game
+	if (state == WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME)
 	{
-		text += " ";
-		text += word + "/n";
-	}	
 
-	font->drawTextAligned(renderer, 4, 4, text, {255, 255, 255, 255}, TextAlign::LEFT, TextAlign::TOP);
+		for (std::string word : currentWords)
+		{
+			text += " ";
+			text += word + "/n";
+		}	
+	}
+
 	font->drawTextOutlined(renderer, 4, 4, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
 }
 
-void ObjWordSearchController::startState(WordSearchState nextState)
+void ObjWordSearchController::resetGameData()
 {
-	state = nextState;
-
-	switch (state)
-	{
-		case WordSearchState::WORD_SEARCH_STATE_START_NEXT_LEVEL:
-		{
-			startNextLevel();
-
-			gameClock->pauseTimer();
-			startState(WordSearchState::WORD_SEARCH_STATE_WAITING_FOR_BOX);
-		}
-		break;
-		
-		case WordSearchState::WORD_SEARCH_STATE_WAITING_FOR_BOX:
-		{
-
-		}
-		break;
-
-		case WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME:
-		{
-			gameClock->unpauseTimer();
-		}
-		break;
-		
-		case WordSearchState::WORD_SEARCH_STATE_GAME_OVER:
-		{
-			//TODO
-			//Disable the box so the player can't click it
-		}
-		break;
-	}
-}
-
-void ObjWordSearchController::gameClockCompletedCallback()
-{
-	gameManager->setRoomToLoad("titlescreen");
+	level = 0;
+	score = 0;
+	difficulty = 0;
 }
 
 void ObjWordSearchController::loadWords(std::string path)
@@ -146,6 +112,7 @@ void ObjWordSearchController::loadWords(std::string path)
 			int length;
 
 			line.erase(std::remove_if(line.begin(), line.end(), ::isspace), line.end());
+			std::transform(line.begin(), line.end(), line.begin(), ::toupper);
 
 			length = line.length();
 			
@@ -189,6 +156,9 @@ void ObjWordSearchController::startNextLevel()
 	getWords();
 
 	wordSearchBox->initializeGrid(gridSize, currentWords);
+	gameClock->pauseTimer();
+	
+	state = WordSearchState::WORD_SEARCH_STATE_WAITING_FOR_BOX;
 }
 
 void ObjWordSearchController::getWords()
@@ -223,4 +193,23 @@ void ObjWordSearchController::getWords()
 	} 
 
 	SDL_Log("ObjWordSearchController: Got words.");
+}
+
+void ObjWordSearchController::boxReadyCallback()
+{
+	gameClock->unpauseTimer();
+
+	state = WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME;
+}
+
+void ObjWordSearchController::gameClockCompletedCallback()
+{
+	//TODO
+	//Start game over sequence
+	state = WordSearchState::WORD_SEARCH_STATE_GAME_OVER;
+
+	wordSearchBox->gameOver();
+	
+	//Won't do this normally!!!
+	gameManager->setRoomToLoad("titlescreen");
 }

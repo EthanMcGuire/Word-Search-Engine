@@ -5,6 +5,7 @@
 #include "nineSlice.hpp"
 #include "spriteAtlas.hpp"
 #include "config.hpp"
+#include "random.hpp"
 #include <stdexcept>
 #include <algorithm>
 
@@ -30,6 +31,8 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 	box->setSprites(atlas, 0, 1, 2, 3, 4, 5, 6, 7, 8);
 
 	setBoxSize(MIN_BOX_SIZE);
+	
+	state = BoxState::BOX_STATE_WAITING;
 }
 
 ObjWordSearchBox::~ObjWordSearchBox()
@@ -45,7 +48,7 @@ void ObjWordSearchBox::update(double deltaTime)
 	{
 		case BoxState::BOX_STATE_WAITING:
 		{
-
+			//Do nothing. Waiting to be initialized
 		}
 		break;
 
@@ -66,14 +69,23 @@ void ObjWordSearchBox::update(double deltaTime)
 
 			if (boxSize == boxSizeGoal)
 			{
-				state = BoxState::BOX_STATE_READY;
+				boxReady();
 			}
 		}
 		break;
 
 		case BoxState::BOX_STATE_READY:
 		{
+			//Nothing to do. Waiting for one of 2 things to happen:
+				//All words are found. Tell controller that the player has won the round
+				//Time ran out. Controller will tell the box to stop allowing words to be selected
 
+		}
+		break;
+
+		case BoxState::BOX_STATE_GAME_OVER:
+		{
+			//Waiting to be initialized again
 		}
 		break;
 	}
@@ -82,7 +94,7 @@ void ObjWordSearchBox::update(double deltaTime)
 void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 {
 	//Draw letters
-	if (grid != NULL)
+	if (state == BoxState::BOX_STATE_READY)
 	{
 		int drawX, drawY;
 		int letterHorizontalSpacing = 16;
@@ -109,6 +121,11 @@ void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 	box->render(renderer, pos[0], pos[1]);	
 }
 
+void ObjWordSearchBox::setReadyCallback(std::function<void()> callback)
+{
+	readyCallback = std::move(callback);
+}
+
 void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 {
 	clearGrid();
@@ -131,6 +148,17 @@ void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 	}
 
 	populateWords(words);
+
+	state = BoxState::BOX_STATE_SHRINKING;
+	showWords = false;
+}
+
+void ObjWordSearchBox::gameOver()
+{
+	state = BoxState::BOX_STATE_GAME_OVER;
+
+	//TODO
+	//Disable mouse input
 }
 
 void ObjWordSearchBox::clearGrid()
@@ -169,9 +197,218 @@ void ObjWordSearchBox::populateWords(std::vector<std::string> words)
 	{
 		SDL_Log("ObjWordSearchBox: Added word: %s", word.c_str());
 		currentWords.push_back({word, false});
+
+		//Add to the grid
+		addWordToGrid(word);
 	}
 
-	//Fill the grid
+	//Scramble the remaining letters
+	for (int i = 0; i < gridSize; i++)
+	{
+		for (int j = 0; j < gridSize; j++)
+		{
+			if (wordGrid[i][j] == -1)
+			{
+				grid[i][j] = gameManager->getRandom()->getRandomInt(65, 90);
+			}
+		}
+	}
+}
+
+void ObjWordSearchBox::addWordToGrid(std::string word)
+{
+	int index;
+	int length;
+	bool success;
+	Random *random;
+
+	random = gameManager->getRandom();
+
+	index = currentWords.size();
+	length = word.length();
+	currentWords.push_back({word, false});	
+
+	success = false;
+
+	while (!success)
+	{
+		int dir;
+		int xDir, yDir;
+		int minX, minY, maxX, maxY;
+		int wordW, wordH;
+
+		dir = random->getRandomInt(0, 7);
+	
+		//Direction starts facing right, and goes clockwise:
+		//0 - Dog
+		//1 - D
+		//     o
+		//      g
+		//2 - D
+		//    o
+		//    g
+		//3 - D
+		//   o
+		//  g
+		//Etc...    
+		//
+		if (dir == 0)
+		{
+			wordW = length;
+			wordH = 1;
+			xDir = 1;
+			yDir = 0;
+
+			minX = 0;
+			minY = 0;
+			maxX = gridSize - wordW;
+			maxY = gridSize - wordH;
+		}
+		else if (dir == 1)
+		{
+			wordW = length;
+			wordH = length;
+			xDir = 1;
+			yDir = 1;
+
+			minX = 0;
+			minY = 0;
+			maxX = gridSize - wordW;
+			maxY = gridSize - wordH; 
+		}
+		else if (dir == 2)
+		{
+			wordW = 1; 
+			wordH = length;
+			xDir = 0;
+			yDir = 1;
+
+			minX = 0;
+			minY = 0;
+			maxX = gridSize - wordW;
+			maxY = gridSize - wordH;
+		}
+		else if (dir == 3)
+		{
+			wordW = length;
+			wordH = length; 
+			xDir = -1;
+			yDir = 1;
+
+			minX = wordW - 1; 
+			minY = 0;
+			maxX = gridSize - 1;
+			maxY = gridSize - wordH;
+		}
+		else if (dir == 4)
+		{
+			wordW = length;
+			wordH = 1;
+			xDir = -1;
+			yDir = 0;
+
+			minX = wordW - 1; 
+			minY = 0;
+			maxX = gridSize - 1;
+			maxY = gridSize - length;
+		}
+		else if (dir == 5)
+		{
+			wordW = length;
+			wordH = length;
+			xDir = -1;
+			yDir = -1;
+
+			minX = wordW - 1;
+			minY = wordH - 1;
+			maxX = gridSize - 1;
+			maxY = gridSize - 1;
+		}
+		else if (dir == 6)
+		{
+			wordW = 1;
+			wordH = length;
+			xDir = 0;
+			yDir = -1;
+
+			minX = 0;
+			minY = wordH - 1;
+			maxX = gridSize - wordW;
+			maxY = gridSize - 1;
+		}
+		else if (dir == 7)
+		{
+			wordW = length;
+			wordH = length; 
+			xDir = 1;
+			yDir = -1;
+
+			minX = 0;
+			minY = wordH - 1;
+			maxX = gridSize - length;
+			maxY = gridSize - 1;
+		}
+
+		for (int i = 0; i < 50; i++)
+		{
+			int xPos, yPos;
+			bool hitWord = false;
+
+			xPos = random->getRandomInt(minX, maxX);
+			yPos = random->getRandomInt(minY, maxY);
+
+			//Attempt placement
+			//If needed, try to cross another word
+			for (int pos = 0; pos < length; pos++)
+			{
+				int curX, curY;
+
+				curX = xPos + xDir * pos;
+				curY = yPos + yDir * pos;
+
+				if (wordGrid[curX][curY] != -1)
+				{
+					hitWord = true;
+					break;
+
+					//TODO
+					//Attempt cross here?
+				}
+			}
+			
+			if (!hitWord)
+			{	
+				success = true;
+				
+				//Place the word in our grid
+				for (int pos = 0; pos < length; pos++)
+				{
+					int curX, curY;
+
+					curX = xPos + xDir * pos;
+					curY = yPos + yDir * pos;
+
+					grid[curX][curY] = word[pos];
+					wordGrid[curX][curY] = index;
+				}
+
+				break;
+			}
+		}
+	}
+}
+
+void ObjWordSearchBox::boxReady()
+{
+	if (readyCallback == NULL)
+	{
+		throw std::runtime_error("ObjWordSearchBox: Ready callback was not set.");
+	}
+
+	readyCallback();
+	
+	state = BoxState::BOX_STATE_READY;
+	showWords = true;
 }
 
 void ObjWordSearchBox::updateBoxSize(double deltaTime, int goalSize)

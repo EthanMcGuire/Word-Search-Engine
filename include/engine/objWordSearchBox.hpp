@@ -5,6 +5,7 @@
 #include "word.hpp"
 #include <string>
 #include <vector>
+#include <functional>
 
 class BitmapFont;
 class NineSlice;
@@ -15,12 +16,9 @@ enum BoxState
 	BOX_STATE_SHRINKING,
 	BOX_STATE_EXPANDING,
 	BOX_STATE_READY,
+	BOX_STATE_GAME_OVER,
 	BOX_STATE_COUNT
 };
-
-//Call clearGrid -> enter shrinking state and reset the level shit
-//Call populate grid -> Populate grid and words, and start expanding the grid
-//Once the grid is expanded, show the words and start
 
 class ObjWordSearchBox : public RenderableObject
 {
@@ -31,10 +29,16 @@ class ObjWordSearchBox : public RenderableObject
 		void update(double deltaTime) override;
 		void renderGui(SDL_Renderer *renderer) override;
 
+		void setReadyCallback(std::function<void()> callback);
+
 		void initializeGrid(int size, std::vector<std::string> words);
+		void gameOver();
 	private:
 		void clearGrid();
 		void populateWords(std::vector<std::string> words);
+		void addWordToGrid(std::string);
+
+		void boxReady();
 
 		void updateBoxSize(double deltaTime, int goalSize);
 		void setBoxSize(int newSize);
@@ -47,7 +51,7 @@ class ObjWordSearchBox : public RenderableObject
 		BitmapFont *font;
 		NineSlice *box;
 
-		BoxState state = BoxState::BOX_STATE_WAITING;
+		BoxState state;
 		int boxSize;
 		int boxSizeGoal = 256;
 		int gridSize = 5;
@@ -55,6 +59,9 @@ class ObjWordSearchBox : public RenderableObject
 		std::vector<Word> currentWords;
 		char** grid = NULL;
 		int** wordGrid = NULL;	//Maps the locations for our words on the grid
+		bool showWords = false;
+
+		std::function<void()> readyCallback;
 };
 
 #endif

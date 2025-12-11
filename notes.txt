@@ -25,3 +25,6 @@
     -If a word would cross another word, attempt to cross it (Involves search for a matching letter to cross over)
     -Words can be placed horizontally, vertically, or diagonally. They can also be placed backwards
     -
+-NOTE:
+	-If you select a letter that is part of multiple words, GET BOTH WORDS!!! (Hell yeah)
+		-Bonus points?

@@ -116,6 +116,7 @@ void NineSlice::render(SDL_Renderer *renderer, int x, int y, SDL_FRect *clip, do
     //Apply texture color and alpha
     atlas->setColorMod(colorMod[0], colorMod[1], colorMod[2]);
     atlas->setAlpha(alpha);
+    atlas->setScaleMode(SDL_SCALEMODE_NEAREST);
 
     //Draw the nine-slice
     drawSlice(renderer, spriteIndices[0], x, y, sliceWidth[0], sliceHeight[0], clip, angle, center, flip);

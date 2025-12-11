@@ -72,6 +72,8 @@ void renderCentered(SDL_Renderer *renderer, int x, int y, double xScale = 1.0, d
         /// @param blending The blend mode.
         void setBlendMode(SDL_BlendMode blending);
 
+	void setScaleMode(SDL_ScaleMode scaleMode);
+
         /// @brief Sets the alpha for the texture.
         /// @param alpha Alpha, from 0 to 255.
         void setAlpha(Uint8 alpha);
