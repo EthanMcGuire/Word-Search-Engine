@@ -583,13 +583,11 @@ void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 
 	SDL_MouseMotionEvent motionEvent;
 	float mouseX, mouseY;
-	LetterInfo *letterInfo;
+	LetterInfo *letterInfo = NULL;
 
 	motionEvent = e.motion;
 	mouseX = motionEvent.x;
 	mouseY = motionEvent.y;
-
-	clearHoveredLetter();
 
 	//Check if we are over a letter
 	for (int i = 0; i < gridSize; i++)
@@ -610,13 +608,26 @@ void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 
 			if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom)
 			{
-				hoveredLetter = nextLetterInfo;
-				hoveredLetter->state = LetterState::LETTER_STATE_HOVERED;
-
+				letterInfo = nextLetterInfo;
 				break;
 			}			
 		}
 	}	
+
+	if (letterInfo != NULL)
+	{
+		if (letterInfo != hoveredLetter)
+		{
+			clearHoveredLetter();
+
+			hoveredLetter = letterInfo;
+			hoveredLetter->state = LetterState::LETTER_STATE_HOVERED;
+		}
+	}
+	else
+	{
+		clearHoveredLetter();
+	}
 }
 
 void ObjWordSearchBox::clearHoveredLetter()
