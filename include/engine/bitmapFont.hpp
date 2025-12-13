@@ -110,6 +110,9 @@ class BitmapFont
         /// @param vAlign Vertical alignment.
         void getTextAlignOffset(int &xOffset, int &yOffset, std::string text, int lineWidth = -1, int sep = -1, TextAlign hAlign = LEFT, TextAlign vAlign = TOP);
 
+	unsigned int getCharWidth(char c);
+	unsigned int getCharHeight(char c);
+
         //Figure out how to render the outline color and text color separately
             //THIS IS ONLY IF THE BITMAP FONT WAS GENERATED WITH A "baked outline"
 

@@ -45,16 +45,18 @@ class ObjWordSearchBox : public RenderableObject
 
 		const int MIN_BOX_SIZE = 32;
 		const int DELTA_BOX_SIZE = 256;
-		const int LETTER_LEFT_OFFSET = 8;
-		const int LETTER_TOP_OFFSET = 8;
+		const int BOX_SIZE_BASE = 24;		
+		const int BOX_LETTER_MARGIN = 18;
 
 		BitmapFont *font;
 		NineSlice *box;
 
 		BoxState state;
 		int boxSize;
-		int boxSizeGoal = 256;
-		int gridSize = 5;
+		int boxSizeGoal;
+		int boxSizeBase;	//Base size in pixels of the box based. Gets multiplied by the number of characters (width/heigth)
+		int boxLetterMargin;	//Inner box masrgin for letters
+		int gridSize;
 
 		std::vector<Word> currentWords;
 		char** grid = NULL;

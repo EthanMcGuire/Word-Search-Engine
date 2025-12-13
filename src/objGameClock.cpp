@@ -17,7 +17,7 @@ ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : Rende
 	    throw std::runtime_error("ObjGameClock: Failed to load font.");
     }
 
-    clockTexture = gameManager->getAssetManager()->getTexture("clock");
+    clockTexture = gameManager->getAssetManager()->getTexture("clock2_B");
 
     if (clockTexture == NULL)
     {

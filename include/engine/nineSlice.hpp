@@ -8,11 +8,24 @@
 
 class SpriteAtlas;
 
-//TODO
-enum NineSliceScaleMode
+/*Sprite atlas sprites are assumed to be formated like so:
+	0 1 2
+	3 4 5
+	6 7 8
+*/
+
+struct NineSliceSpriteInfo
 {
-    NINE_SLICE_SCALE_MODE_STRETCH,
-    NINE_SLICE_SCALE_MODE_REPEAT
+	SpriteAtlas *atlas = NULL;	//Atlas that contains the nine-slice sprites
+	bool stretchLeft = true;
+	bool stretchTop = true;
+	bool stretchRight = true;
+	bool stretchMiddleLeft = true;
+	bool stretchMiddleCenter = true;
+	bool stretchMiddleRight = true;
+	bool stretchBottomLeft = true;
+	bool stretchBottomCenter = true;
+	bool stretchBottomRight = true;
 };
 
 class NineSlice
@@ -22,20 +35,10 @@ class NineSlice
 
         /// @brief Sets the nine slice sprite atlas and sprite indices.
         /// @param atlas The sprite atlas to use.
-        /// @param topLeft Top left sprite index in the atlas.
-        /// @param topCenter Top center sprite index in the atlas.
-        /// @param topRight Top right sprite index in the atlas.
-        /// @param middleLeft Middle left sprite index in the atlas.
-        /// @param middleCenter Middle center sprite index in the atlas.
-        /// @param middleRight Middle right sprite index in the atlas.
-        /// @param bottomLeft Bottom left sprite index in the atlas.
-        /// @param bottomCenter Bottom center sprite index in the atlas.
-        /// @param bottomRight Bottom right sprite index in the atlas.
-        void setSprites(SpriteAtlas *atlas, unsigned int topLeft, unsigned int topCenter, unsigned int topRight, unsigned int middleLeft, unsigned int middleCenter, 
-                                    unsigned int middleRight, unsigned int bottomLeft, unsigned int bottomCenter, unsigned int bottomRight);
+	void setSpriteInfo(NineSliceSpriteInfo spriteInfo);
 
-        /// @brief Clears the sprite atlas.
-        void clearSprites();
+        /// @brief Clears the sprite info.
+        void clearSpriteInfo();
 
         /// @brief Draws the nine slice rectangle.
         /// @param renderer The renderer.
@@ -52,6 +55,7 @@ class NineSlice
         /// @brief Draws a nine-slice section.
         /// @param renderer The renderer.
         /// @param spriteIndex Index of atlas to draw.
+	/// @param drawStretched Whether to draw this slice as streched, or repeated.
         /// @param x X draw location.
         /// @param y Y draw location.
         /// @param w Width to draw slice at.
@@ -60,7 +64,7 @@ class NineSlice
         /// @param angle Angle to rotate each slice.
         /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
         /// @param flip Whether to flip each slice horizontally or vertically.
-        void drawSlice(SDL_Renderer *renderer, unsigned int spriteIndex, int x, int y, unsigned int w, unsigned int h, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const;
+        void drawSlice(SDL_Renderer *renderer, unsigned int spriteIndex, bool drawStretched, int x, int y, unsigned int w, unsigned int h, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const;
     
         /// @brief Sets the rectangle size.
         /// @param w Width in pixels.
@@ -77,14 +81,7 @@ class NineSlice
         unsigned int getSliceSize() const;
 
     private:
-        NineSliceScaleMode scaleMode;
-
-        SpriteAtlas *atlas;     //Atlas that contains the nine-slice sprites
-
-        unsigned int spriteIndices[9];    //Nine-slice sprite indices in the atlas:
-                                                        //0 1 2
-                                                        //3 4 5
-                                                        //6 7 8
+	NineSliceSpriteInfo spriteInfo;
 
         unsigned int spriteSize;    //Width/height for each sprite in the nine-slice
         unsigned int minSize;       //Minimum width/height in pixels

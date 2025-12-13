@@ -18,6 +18,10 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 		throw std::runtime_error("ObjWordSearchBox: Failed to load font.");
 	}
 
+	//Get the letter sizing and margins based on the font size
+	boxSizeBase = font->getCharWidth('W') + 8;
+	boxLetterMargin = font->getCharWidth('W') - 2;
+
 	SpriteAtlas *atlas;
 
 	atlas = gameManager->getAssetManager()->getAtlas("wordSearchBox");
@@ -28,7 +32,12 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 	}
 
 	box = new NineSlice();
-	box->setSprites(atlas, 0, 1, 2, 3, 4, 5, 6, 7, 8);
+	NineSliceSpriteInfo spriteInfo;
+
+	spriteInfo.atlas = atlas;
+	spriteInfo.stretchMiddleCenter = false;	//Repeat the center of the nineslice
+	
+	box->setSpriteInfo(spriteInfo);
 
 	setBoxSize(MIN_BOX_SIZE);
 	
@@ -93,32 +102,35 @@ void ObjWordSearchBox::update(double deltaTime)
 
 void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 {
+	//Draw box
+	box->render(renderer, pos[0], pos[1]);	
+	
 	//Draw letters
 	if (state == BoxState::BOX_STATE_READY)
 	{
 		int drawX, drawY;
-		int letterHorizontalSpacing = 16;
-		int letterVerticalSpacing = 16;
+		int availableSpace;
+		int letterSpacing;
 
-		drawY = (int) (pos[1] + LETTER_TOP_OFFSET);
+		availableSpace = boxSize - (boxLetterMargin * 2);
+		letterSpacing = availableSpace / (gridSize - 1);
+
+		drawY = (int) (pos[1] + boxLetterMargin);
 
 		for (int i = 0; i < gridSize; i++)
 		{
-			drawX = (int) (pos[0] + LETTER_LEFT_OFFSET);
+			drawX = (int) (pos[0] + boxLetterMargin);
 
 			for (int j = 0; j < gridSize; j++)
 			{
-				font->drawText(renderer, drawX, drawY, std::string(1, grid[i][j]));
+				font->drawTextOutlined(renderer, drawX, drawY, std::string(1, grid[i][j]), {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::CENTER, TextAlign::CENTER);
 
-				drawX += letterHorizontalSpacing;
+				drawX += letterSpacing;
 			}
 
-			drawY += letterVerticalSpacing;
+			drawY += letterSpacing;
 		}
 	}
-	
-	//Draw box
-	box->render(renderer, pos[0], pos[1]);	
 }
 
 void ObjWordSearchBox::setReadyCallback(std::function<void()> callback)
@@ -131,6 +143,7 @@ void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 	clearGrid();
 
 	gridSize = size;
+	boxSizeGoal = boxSizeBase * gridSize;
 
 	grid = new char*[gridSize];
 	wordGrid = new int*[gridSize];

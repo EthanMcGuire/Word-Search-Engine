@@ -59,6 +59,18 @@ void renderCentered(SDL_Renderer *renderer, int x, int y, double xScale = 1.0, d
         /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
         /// @param flip Whether to flip the texture horizontally or vertically.
         void renderStretched(SDL_Renderer *renderer, int x, int y, int drawWidth, int drawHeight, SDL_FRect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_FlipMode flip = SDL_FLIP_NONE) const;
+	
+	/// @brief Renders the texture to the given renderer. Repeats the texture over a area.
+        /// @param renderer The renderer to render to.
+        /// @param x X location on the viewport.
+        /// @param y Y location on the viewport.
+        /// @param drawWidth Width to draw the texture at.
+        /// @param drawHeight Height to draw the texture at.
+        /// @param clip Portion of the texture to render.
+        /// @param angle Image rotation angle.
+        /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
+        /// @param flip Whether to flip the texture horizontally or vertically.
+        void renderRepeated(SDL_Renderer *renderer, int x, int y, int drawWidth, int drawHeight, SDL_FRect *clip = NULL, double angle = 0.0, SDL_FPoint *center = NULL, SDL_FlipMode flip = SDL_FLIP_NONE) const;
 
         #pragma region Setters
 

@@ -165,6 +165,57 @@ void SpriteAtlas::renderStretched(SDL_Renderer *renderer, unsigned int spriteInd
     Texture::renderStretched(renderer, x, y, drawWidth, drawHeight, &spriteClip, angle, center, flip);
 }
 
+/// @brief Renders the given sprite of a sprite sheet to the given renderer. Repeates the sprite over a area.
+/// @param renderer The renderer to render to.
+/// @param spriteIndex The sprite to draw from the sprite sheet.
+/// @param x X location on the viewport.
+/// @param y Y location on the viewport.
+/// @param drawWidth Width to draw the texture at.
+/// @param drawHeight Height to draw the texture at.
+/// @param clip Portion of the texture to render.
+/// @param angle Image rotation angle.
+/// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
+/// @param flip Whether the flip the texture horizontally or vertically.
+void SpriteAtlas::renderRepeated(SDL_Renderer *renderer, unsigned int spriteIndex, int x, int y, int drawWidth, int drawHeight, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const
+{
+    if (!textureLoaded())
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SpriteAtlas: Attempted to render sprite with no load sprite atlas! Call loadTexture() first.");
+
+        return;
+    }
+    else if (spriteIndex < 0 || spriteIndex >= spriteCount)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SpriteAtlas: Failed to render sprite. spriteIndex is outside the valid range. spriteIndex: %d ValidRange: 0 -> %d", spriteIndex, spriteCount - 1);
+
+        return;
+    }
+
+    SDL_FRect spriteClip;
+    int col, row;
+
+    col = spriteIndex % columnCount;
+    row = spriteIndex / columnCount;
+
+    //Get the sprites region in the sprite atlas
+    spriteClip.x = (float) col * spriteWidth;
+    spriteClip.y = (float) row * spriteHeight;
+    spriteClip.w = (float) spriteWidth;
+    spriteClip.h = (float) spriteHeight;
+
+    //Render part of the sprite
+    if (clip != NULL)
+    {
+        spriteClip.x += clip->x;
+        spriteClip.y += clip->y;
+        spriteClip.w = clip->w;
+        spriteClip.h = clip->h;
+    }
+
+    //Render the sprite
+    Texture::renderRepeated(renderer, x, y, drawWidth, drawHeight, &spriteClip, angle, center, flip);
+}
+
 #pragma region Getters
 
 unsigned int SpriteAtlas::getSpriteCount() const

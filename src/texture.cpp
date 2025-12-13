@@ -153,6 +153,42 @@ void Texture::renderStretched(SDL_Renderer *renderer, int x, int y, int drawWidt
     SDL_RenderTextureRotated(renderer, texture, clip, &renderQuad, angle, center, flip);
 }
 
+/// @brief Renders the texture to the given renderer. Repeats the texture over a area.
+/// @param renderer The renderer to render to.
+/// @param x X location on the viewport.
+/// @param y Y location on the viewport.
+/// @param drawWidth Width to draw the texture at.
+/// @param drawHeight Height to draw the texture at.
+/// @param clip Portion of the texture to render.
+/// @param angle Image rotation angle.
+/// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
+/// @param flip Whether the flip the texture horizontally or vertically.
+void Texture::renderRepeated(SDL_Renderer *renderer, int x, int y, int drawWidth, int drawHeight, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const
+{
+    if (texture == NULL)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Texture: Attempted to render NULL texture! Call loadTexture() to load a texture.");
+
+        return;
+    }
+
+    for (float _x = x; _x < x + drawWidth; _x += width)
+    {
+	    for (float _y = y; _y < y + drawHeight; _y += height)
+	    {
+		    float _w, _h;
+
+		    _w = SDL_min(width, (x + drawWidth) - _x);
+		    _h = SDL_min(height, (y + drawHeight) - _y);
+
+		    SDL_FRect renderQuad = {(float) _x, (float) _y, (float) _w, (float) _h};
+
+		    //Render the texture
+		    SDL_RenderTextureRotated(renderer, texture, clip, &renderQuad, angle, center, flip);
+	    }
+    }
+}
+
 #pragma region Setters
 
 /// @brief Set the color modulation (multiplier) for the texture.

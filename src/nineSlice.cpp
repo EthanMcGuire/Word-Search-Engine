@@ -4,60 +4,34 @@
 
 NineSlice::NineSlice()
 {
-    scaleMode = NINE_SLICE_SCALE_MODE_STRETCH;
-
-    atlas = nullptr;
-
+    spriteSize = 0;
+    minSize = 0;
     width = 0;
     height = 0;
-
-    for (int i = 0; i < 9; ++i) 
-    {
-        spriteIndices[i] = 0;
-    }
 }
 
 /// @brief Sets the nine slice sprite atlas and sprite indices.
 /// @param atlas The sprite atlas to use.
-/// @param topLeft Top left sprite index in the atlas.
-/// @param topCenter Top center sprite index in the atlas.
-/// @param topRight Top right sprite index in the atlas.
-/// @param middleLeft Middle left sprite index in the atlas.
-/// @param middleCenter Middle center sprite index in the atlas.
-/// @param middleRight Middle right sprite index in the atlas.
-/// @param bottomLeft Bottom left sprite index in the atlas.
-/// @param bottomCenter Bottom center sprite index in the atlas.
-/// @param bottomRight Bottom right sprite index in the atlas.
-void NineSlice::setSprites(SpriteAtlas *atlas, unsigned int topLeft, unsigned int topCenter, unsigned int topRight, unsigned int middleLeft, unsigned int middleCenter, 
-                                    unsigned int middleRight, unsigned int bottomLeft, unsigned int bottomCenter, unsigned int bottomRight)
+void NineSlice::setSpriteInfo(NineSliceSpriteInfo spriteInfo)
 {
-    clearSprites();
+    clearSpriteInfo();
 
     //Do nothing if the atlas is null
-    if (atlas == nullptr)
+    if (spriteInfo.atlas == NULL)
     {
         return;
     }
+    
+    this->spriteInfo = spriteInfo;
 
-    this->atlas = atlas;
-    this->spriteSize = atlas->getSpriteWidth();
+    spriteSize = this->spriteInfo.atlas->getSpriteWidth();
     minSize = spriteSize * 2;
-
-    spriteIndices[0] = topLeft;
-    spriteIndices[1] = topCenter;
-    spriteIndices[2] = topRight;
-    spriteIndices[3] = middleLeft;
-    spriteIndices[4] = middleCenter;
-    spriteIndices[5] = middleRight;
-    spriteIndices[6] = bottomLeft;
-    spriteIndices[7] = bottomCenter;
-    spriteIndices[8] = bottomRight;
 }
 
-/// @brief Clears the sprite atlas.
-void NineSlice::clearSprites()
+/// @brief Clears the sprite info.
+void NineSlice::clearSpriteInfo()
 {
-    atlas = nullptr;
+    this->spriteInfo.atlas = NULL;
 }
 
 /// @brief Draws the nine slice rectangle.
@@ -72,7 +46,7 @@ void NineSlice::clearSprites()
 /// @param colorMod The RGB color mod.
 void NineSlice::render(SDL_Renderer *renderer, int x, int y, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip, int alpha, gmtl::Vec3i colorMod) const
 {
-    if (atlas == nullptr || width == 0 || height == 0 || spriteSize == 0)
+    if (spriteInfo.atlas == NULL || width == 0 || height == 0 || spriteSize == 0)
     {
         return;
     }
@@ -114,29 +88,30 @@ void NineSlice::render(SDL_Renderer *renderer, int x, int y, SDL_FRect *clip, do
     sliceHeight[8] = spriteSize;                 //Bottom right corner
 
     //Apply texture color and alpha
-    atlas->setColorMod(colorMod[0], colorMod[1], colorMod[2]);
-    atlas->setAlpha(alpha);
-    atlas->setScaleMode(SDL_SCALEMODE_NEAREST);
+    spriteInfo.atlas->setColorMod(colorMod[0], colorMod[1], colorMod[2]);
+    spriteInfo.atlas->setAlpha(alpha);
+    spriteInfo.atlas->setScaleMode(SDL_SCALEMODE_NEAREST);
 
     //Draw the nine-slice
-    drawSlice(renderer, spriteIndices[0], x, y, sliceWidth[0], sliceHeight[0], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[1], x + sliceWidth[0], y, sliceWidth[1], sliceHeight[1], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[2], x + sliceWidth[0] + sliceWidth[1], y, sliceWidth[2], sliceHeight[2], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[3], x, y + sliceHeight[0], sliceWidth[3], sliceHeight[3], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[4], x + sliceWidth[0], y + sliceHeight[0], sliceWidth[4], sliceHeight[4], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[5], x + sliceWidth[0] + sliceWidth[1], y + sliceHeight[0], sliceWidth[5], sliceHeight[5], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[6], x, y + sliceHeight[0] + sliceHeight[3], sliceWidth[6], sliceHeight[6], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[7], x + sliceWidth[0], y + sliceHeight[0] + sliceHeight[3], sliceWidth[7], sliceHeight[7], clip, angle, center, flip);
-    drawSlice(renderer, spriteIndices[8], x + sliceWidth[0] + sliceWidth[1], y + sliceHeight[0] + sliceHeight[3], sliceWidth[8], sliceHeight[8], clip, angle, center, flip);
+    drawSlice(renderer, 0, spriteInfo.stretchLeft, x, y, sliceWidth[0], sliceHeight[0], clip, angle, center, flip);
+    drawSlice(renderer, 1, spriteInfo.stretchTop, x + sliceWidth[0], y, sliceWidth[1], sliceHeight[1], clip, angle, center, flip);
+    drawSlice(renderer, 2, spriteInfo.stretchRight, x + sliceWidth[0] + sliceWidth[1], y, sliceWidth[2], sliceHeight[2], clip, angle, center, flip);
+    drawSlice(renderer, 3, spriteInfo.stretchMiddleLeft, x, y + sliceHeight[0], sliceWidth[3], sliceHeight[3], clip, angle, center, flip);
+    drawSlice(renderer, 4, spriteInfo.stretchMiddleCenter, x + sliceWidth[0], y + sliceHeight[0], sliceWidth[4], sliceHeight[4], clip, angle, center, flip);
+    drawSlice(renderer, 5, spriteInfo.stretchMiddleRight, x + sliceWidth[0] + sliceWidth[1], y + sliceHeight[0], sliceWidth[5], sliceHeight[5], clip, angle, center, flip);
+    drawSlice(renderer, 6, spriteInfo.stretchBottomLeft, x, y + sliceHeight[0] + sliceHeight[3], sliceWidth[6], sliceHeight[6], clip, angle, center, flip);
+    drawSlice(renderer, 7, spriteInfo.stretchBottomCenter, x + sliceWidth[0], y + sliceHeight[0] + sliceHeight[3], sliceWidth[7], sliceHeight[7], clip, angle, center, flip);
+    drawSlice(renderer, 8, spriteInfo.stretchBottomRight, x + sliceWidth[0] + sliceWidth[1], y + sliceHeight[0] + sliceHeight[3], sliceWidth[8], sliceHeight[8], clip, angle, center, flip);
 
     //Reset texture color
-    atlas->setColorMod(255, 255, 255);
-    atlas->setAlpha(255);
+    spriteInfo.atlas->setColorMod(255, 255, 255);
+    spriteInfo.atlas->setAlpha(255);
 }
 
 /// @brief Draws a nine-slice section.
 /// @param renderer The renderer.
 /// @param spriteIndex Index of atlas to draw.
+/// @param drawStreched Whether to draw this slice as streched, or repeated.
 /// @param x X draw location.
 /// @param y Y draw location.
 /// @param w Width to draw slice at.
@@ -145,14 +120,21 @@ void NineSlice::render(SDL_Renderer *renderer, int x, int y, SDL_FRect *clip, do
 /// @param angle Angle to rotate each slice.
 /// @param center Center point to rotate the texture at. Defaults at w/2, h/2 of the dest rect (image center).
 /// @param flip Whether to flip each slice horizontally or vertically.
-void NineSlice::drawSlice(SDL_Renderer *renderer, unsigned int spriteIndex, int x, int y, unsigned int w, unsigned int h, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const
+void NineSlice::drawSlice(SDL_Renderer *renderer, unsigned int spriteIndex, bool drawStreched, int x, int y, unsigned int w, unsigned int h, SDL_FRect *clip, double angle, SDL_FPoint *center, SDL_FlipMode flip) const
 {
     if (w == 0 || h == 0)
     {
         return;
     }
 
-    atlas->renderStretched(renderer, spriteIndex, x, y, w, h, clip, angle, center, flip);
+    if (drawStreched)
+    {
+	    spriteInfo.atlas->renderStretched(renderer, spriteIndex, x, y, w, h, clip, angle, center, flip);
+    }
+    else
+    {
+	spriteInfo.atlas->renderRepeated(renderer, spriteIndex, x, y, w, h, clip, angle, center, flip);
+    }
 }
 
 /// @brief Sets the rectangle size.

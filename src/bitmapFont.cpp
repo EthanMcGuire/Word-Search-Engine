@@ -410,6 +410,28 @@ void BitmapFont::getTextAlignOffset(int &xOffset, int &yOffset, std::string text
     }
 }
 
+unsigned int BitmapFont::getCharWidth(char c)
+{
+	CharInfo *charInfo;
+
+	charInfo = getCharInfo(c);
+
+	if (charInfo == NULL) return 0;
+
+	return charInfo->width;
+}
+
+unsigned int BitmapFont::getCharHeight(char c)
+{
+	CharInfo *charInfo;
+
+	charInfo = getCharInfo(c);
+
+	if (charInfo == NULL) return 0;
+
+	return charInfo->height;
+}
+
 /// @brief Gets the width and height of the given text for this font.
 /// @param width The returned width.
 /// @param height The returned height.
