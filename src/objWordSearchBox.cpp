@@ -6,11 +6,15 @@
 #include "spriteAtlas.hpp"
 #include "config.hpp"
 #include "random.hpp"
+#include "drawingSurface.hpp"
+#include "eventDispatcher.hpp"
 #include <stdexcept>
 #include <algorithm>
 
 ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y) : RenderableObject("objWordSearchBox", gameManager, x, y)
 {
+	state = BoxState::BOX_STATE_WAITING;
+
 	font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
 
 	if (font == NULL)
@@ -31,6 +35,7 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 		throw std::runtime_error("ObjWordSearchBox: Failed to load atlas for nine slice box.");
 	}
 
+	//Create GUI stuff
 	box = new NineSlice();
 	NineSliceSpriteInfo spriteInfo;
 
@@ -41,12 +46,22 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 
 	setBoxSize(MIN_BOX_SIZE);
 	
-	state = BoxState::BOX_STATE_WAITING;
+	letterSurface = new DrawingSurface();
+
+	//Input events
+	mouseButtonDownEventListenerId = gameManager->getEventDispatcher()->addSDLListener(SDL_EVENT_MOUSE_BUTTON_DOWN, std::bind(&ObjWordSearchBox::mouseButtonCallback, this, std::placeholders::_1));
+	mouseButtonUpEventListenerId = gameManager->getEventDispatcher()->addSDLListener(SDL_EVENT_MOUSE_BUTTON_UP, std::bind(&ObjWordSearchBox::mouseButtonCallback, this, std::placeholders::_1));
+	mouseMoveEventListenerId = gameManager->getEventDispatcher()->addSDLListener(SDL_EVENT_MOUSE_MOTION, std::bind(&ObjWordSearchBox::mouseMoveCallback, this, std::placeholders::_1));
 }
 
 ObjWordSearchBox::~ObjWordSearchBox()
 {
+	gameManager->getEventDispatcher()->removeSDLListener(mouseButtonDownEventListenerId);
+	gameManager->getEventDispatcher()->removeSDLListener(mouseButtonUpEventListenerId);
+	gameManager->getEventDispatcher()->removeSDLListener(mouseMoveEventListenerId);
+
 	delete box;
+	delete letterSurface;
 	
 	clearGrid();
 }
@@ -102,35 +117,91 @@ void ObjWordSearchBox::update(double deltaTime)
 
 void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 {
+	//Draw black alpha background
+	SDL_FRect rect;
+
+	rect = {(float) pos[0], (float) pos[1], (float) boxSize, (float) boxSize};
+
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 96);
+	SDL_RenderFillRect(renderer, &rect);
+	
 	//Draw box
 	box->render(renderer, pos[0], pos[1]);	
 	
-	//Draw letters
-	if (state == BoxState::BOX_STATE_READY)
+	drawLetters(renderer);	
+}
+
+void ObjWordSearchBox::drawLetters(SDL_Renderer *renderer)
+{
+	if (state != BoxState::BOX_STATE_READY)
 	{
-		int drawX, drawY;
-		int availableSpace;
-		int letterSpacing;
+		return;
+	}
 
-		availableSpace = boxSize - (boxLetterMargin * 2);
-		letterSpacing = availableSpace / (gridSize - 1);
-
-		drawY = (int) (pos[1] + boxLetterMargin);
-
-		for (int i = 0; i < gridSize; i++)
+	for (int i = 0; i < gridSize; i++)
+	{
+		for (int j = 0; j < gridSize; j++)
 		{
-			drawX = (int) (pos[0] + boxLetterMargin);
-
-			for (int j = 0; j < gridSize; j++)
-			{
-				font->drawTextOutlined(renderer, drawX, drawY, std::string(1, grid[i][j]), {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::CENTER, TextAlign::CENTER);
-
-				drawX += letterSpacing;
-			}
-
-			drawY += letterSpacing;
+			drawLetter(renderer, grid[i][j]);
 		}
 	}
+}
+
+void ObjWordSearchBox::drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo)
+{
+	SDL_Color drawColor, outlineColor;
+	unsigned int letterWidth, letterHeight;
+	double letterScale = 1;
+
+	outlineColor = {0, 0, 0, 255};
+
+	switch (letterInfo.state)
+	{
+		case LetterState::LETTER_STATE_NORMAL:
+		{
+			drawColor = {255, 255, 255, 255};
+		}
+		break;
+
+		case LetterState::LETTER_STATE_HOVERED:
+		{
+			drawColor = {255, 255, 0, 255};
+			outlineColor = {128, 0, 128, 255};
+		}
+		break;
+
+		case LetterState::LETTER_STATE_PRESSED:
+		{
+			drawColor = {255, 255, 0, 255};
+			letterScale = 0.9;
+		}
+		break;
+		
+		case LetterState::LETTER_STATE_CROSSED:
+		{
+			drawColor = {255, 0, 0, 255};
+		}
+		break;
+
+	}
+
+	letterWidth = letterInfo.width;
+	letterHeight = letterInfo.height;
+
+	letterSurface->createSurface(renderer, letterWidth, letterHeight);
+	letterSurface->setBlendMode(SDL_BLENDMODE_BLEND);
+	letterSurface->setScaleMode(SDL_SCALEMODE_NEAREST);
+	letterSurface->targetSurface(renderer);
+
+	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
+	SDL_RenderClear(renderer);
+
+	font->drawTextOutlined(renderer, letterWidth / 2, letterHeight / 2, std::string(1, letterInfo.letter), drawColor, outlineColor, TextAlign::CENTER, TextAlign::CENTER);
+
+	SDL_SetRenderTarget(renderer, NULL);
+
+	letterSurface->drawSurface(renderer, letterInfo.x - (letterWidth * letterScale / 2), letterInfo.y - (letterHeight * letterScale / 2), letterScale, letterScale);
 }
 
 void ObjWordSearchBox::setReadyCallback(std::function<void()> callback)
@@ -145,17 +216,17 @@ void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 	gridSize = size;
 	boxSizeGoal = boxSizeBase * gridSize;
 
-	grid = new char*[gridSize];
+	grid = new LetterInfo*[gridSize];
 	wordGrid = new int*[gridSize];
 
 	for (int i = 0; i < gridSize; i++)
 	{
-		grid[i] = new char[gridSize];
+		grid[i] = new LetterInfo[gridSize];
 		wordGrid[i] = new int[gridSize];
 
 		for (int j = 0; j < gridSize; j++)
 		{
-			grid[i][j] = 'A';
+			grid[i][j] = {'A', LetterState::LETTER_STATE_NORMAL, 0, 0, 0, 0};
 			wordGrid[i][j] = -1;
 		}
 	}
@@ -169,6 +240,7 @@ void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 void ObjWordSearchBox::gameOver()
 {
 	state = BoxState::BOX_STATE_GAME_OVER;
+	clearHoveredLetter();
 
 	//TODO
 	//Disable mouse input
@@ -178,6 +250,8 @@ void ObjWordSearchBox::clearGrid()
 {
 	if (grid != NULL)
 	{
+		clearHoveredLetter();
+
 		for (int i = 0; i < gridSize; i++)
 		{
 			delete[] grid[i];
@@ -214,15 +288,17 @@ void ObjWordSearchBox::populateWords(std::vector<std::string> words)
 		//Add to the grid
 		addWordToGrid(word);
 	}
-
-	//Scramble the remaining letters
+	
+	//Scramble the unset letters
 	for (int i = 0; i < gridSize; i++)
 	{
 		for (int j = 0; j < gridSize; j++)
 		{
 			if (wordGrid[i][j] == -1)
 			{
-				grid[i][j] = gameManager->getRandom()->getRandomInt(65, 90);
+				grid[i][j].letter = gameManager->getRandom()->getRandomInt(65, 90);
+				grid[i][j].width = font->getCharWidth(grid[i][j].letter);
+				grid[i][j].height = font->getCharHeight(grid[i][j].letter);
 			}
 		}
 	}
@@ -251,6 +327,8 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 		int wordW, wordH;
 
 		dir = random->getRandomInt(0, 7);
+
+		SDL_Log("ObjWordSearchBox: Attempting to add word with dir %d...", dir);
 	
 		//Direction starts facing right, and goes clockwise:
 		//0 - Dog
@@ -323,7 +401,7 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 			minX = wordW - 1; 
 			minY = 0;
 			maxX = gridSize - 1;
-			maxY = gridSize - length;
+			maxY = gridSize - wordH;
 		}
 		else if (dir == 5)
 		{
@@ -401,7 +479,10 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 					curX = xPos + xDir * pos;
 					curY = yPos + yDir * pos;
 
-					grid[curX][curY] = word[pos];
+					grid[curX][curY].letter = word[pos];
+					grid[curX][curY].width = font->getCharWidth(grid[curX][curY].letter);
+					grid[curX][curY].height = font->getCharHeight(grid[curX][curY].letter);
+
 					wordGrid[curX][curY] = index;
 				}
 
@@ -422,6 +503,8 @@ void ObjWordSearchBox::boxReady()
 	
 	state = BoxState::BOX_STATE_READY;
 	showWords = true;
+
+	updateLetterPositions();
 }
 
 void ObjWordSearchBox::updateBoxSize(double deltaTime, int goalSize)
@@ -446,4 +529,101 @@ void ObjWordSearchBox::setBoxSize(int newSize)
 
 	box->setSize(boxSize, boxSize);
 	pos = {(double) Config::SCREEN_WIDTH / 2 - boxSize / 2, (double) Config::SCREEN_HEIGHT / 2 - boxSize / 2};
+
+	updateLetterPositions();
+}
+
+void ObjWordSearchBox::updateLetterPositions()
+{
+	if (grid == NULL) return;
+
+	int letterX, letterY;
+	int availableSpace;
+	int letterSpacing;
+
+	availableSpace = boxSize - (boxLetterMargin * 2);
+	letterSpacing = availableSpace / (gridSize - 1);
+
+	letterY = (int) (pos[1] + boxLetterMargin);
+
+	for (int i = 0; i < gridSize; i++)
+	{
+		letterX = (int) (pos[0] + boxLetterMargin);
+
+		for (int j = 0; j < gridSize; j++)
+		{
+			grid[i][j].x = letterX;
+			grid[i][j].y = letterY;
+
+			letterX += letterSpacing;
+		}
+
+		letterY += letterSpacing;
+	}
+}
+
+void ObjWordSearchBox::mouseButtonCallback(SDL_Event &e)
+{
+	if (e.button.button != SDL_BUTTON_LEFT) return;
+	if (hoveredLetter == NULL) return;
+
+	if (e.button.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+	{
+		hoveredLetter->state = LetterState::LETTER_STATE_PRESSED;
+	}
+	else
+	{
+		hoveredLetter->state = LetterState::LETTER_STATE_HOVERED;
+	}	
+}
+
+void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
+{
+	if (state != BoxState::BOX_STATE_READY) return;
+
+	SDL_MouseMotionEvent motionEvent;
+	float mouseX, mouseY;
+	LetterInfo *letterInfo;
+
+	motionEvent = e.motion;
+	mouseX = motionEvent.x;
+	mouseY = motionEvent.y;
+
+	clearHoveredLetter();
+
+	//Check if we are over a letter
+	for (int i = 0; i < gridSize; i++)
+	{
+		for (int j = 0; j < gridSize; j++)
+		{
+			float left, top, right, bottom;
+			unsigned int bboxSize;
+			LetterInfo *nextLetterInfo;
+
+			nextLetterInfo = &grid[i][j];
+			bboxSize = SDL_max(nextLetterInfo->width, nextLetterInfo->height);
+
+			left = nextLetterInfo->x - (bboxSize / 2.f);
+			top = nextLetterInfo->y - (bboxSize / 2.f);
+			right = nextLetterInfo->x + (bboxSize / 2.f);
+			bottom = nextLetterInfo->y + (bboxSize / 2.f);
+
+			if (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom)
+			{
+				hoveredLetter = nextLetterInfo;
+				hoveredLetter->state = LetterState::LETTER_STATE_HOVERED;
+
+				break;
+			}			
+		}
+	}	
+}
+
+void ObjWordSearchBox::clearHoveredLetter()
+{
+	if (hoveredLetter != NULL)
+	{
+		hoveredLetter->state = LetterState::LETTER_STATE_NORMAL;
+		hoveredLetter = NULL;
+	}
 }

@@ -3,12 +3,14 @@
 
 #include "renderableObject.hpp"
 #include "word.hpp"
+#include <SDL3/SDL_events.h>
 #include <string>
 #include <vector>
 #include <functional>
 
 class BitmapFont;
 class NineSlice;
+class DrawingSurface;
 
 enum BoxState
 {
@@ -18,6 +20,23 @@ enum BoxState
 	BOX_STATE_READY,
 	BOX_STATE_GAME_OVER,
 	BOX_STATE_COUNT
+};
+
+enum LetterState
+{
+	LETTER_STATE_NORMAL,
+	LETTER_STATE_HOVERED,
+	LETTER_STATE_PRESSED,
+	LETTER_STATE_CROSSED,
+	LETTER_STATE_COUNT
+};
+
+struct LetterInfo
+{
+	char letter;
+	LetterState state;
+	float x, y;
+	unsigned int width, height;
 };
 
 class ObjWordSearchBox : public RenderableObject
@@ -34,6 +53,9 @@ class ObjWordSearchBox : public RenderableObject
 		void initializeGrid(int size, std::vector<std::string> words);
 		void gameOver();
 	private:
+		void drawLetters(SDL_Renderer *renderer);
+		void drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo);
+
 		void clearGrid();
 		void populateWords(std::vector<std::string> words);
 		void addWordToGrid(std::string);
@@ -42,6 +64,12 @@ class ObjWordSearchBox : public RenderableObject
 
 		void updateBoxSize(double deltaTime, int goalSize);
 		void setBoxSize(int newSize);
+		void updateLetterPositions();
+
+		void mouseButtonCallback(SDL_Event &e);
+		void mouseMoveCallback(SDL_Event &e);
+
+		void clearHoveredLetter();
 
 		const int MIN_BOX_SIZE = 32;
 		const int DELTA_BOX_SIZE = 256;
@@ -50,6 +78,7 @@ class ObjWordSearchBox : public RenderableObject
 
 		BitmapFont *font;
 		NineSlice *box;
+		DrawingSurface *letterSurface;
 
 		BoxState state;
 		int boxSize;
@@ -59,11 +88,15 @@ class ObjWordSearchBox : public RenderableObject
 		int gridSize;
 
 		std::vector<Word> currentWords;
-		char** grid = NULL;
+		LetterInfo *hoveredLetter = NULL;
+		LetterInfo** grid = NULL;
 		int** wordGrid = NULL;	//Maps the locations for our words on the grid
 		bool showWords = false;
 
 		std::function<void()> readyCallback;
+		uint32_t mouseButtonDownEventListenerId;
+		uint32_t mouseButtonUpEventListenerId;
+		uint32_t mouseMoveEventListenerId;
 };
 
 #endif

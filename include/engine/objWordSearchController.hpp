@@ -40,8 +40,8 @@ class ObjWordSearchController : public RenderableObject
 
 		const int STARTING_TIME = 60000;
 		const int STARTING_GRID_SIZE = 6;
-		const int STARTING_MIN_WORD_COUNT = 3;
-		const int STARTING_MAX_WORD_COUNT = 5;
+		const int STARTING_MIN_WORD_COUNT = 2;
+		const int STARTING_MAX_WORD_COUNT = 3;
 		const int MIN_WORD_LENGTH = 3;	//This will never change. Word length will be MIN_WORD_LENGTH -> GRID_SIZE (Capped at MAX_WORD_LENGTH) 
 		const int MAX_WORD_LENGTH = 31;
 
