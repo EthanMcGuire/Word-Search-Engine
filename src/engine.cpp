@@ -21,7 +21,7 @@ bool Engine::initializeEngine()
         return false;
     }
 
-    if (!SDL_CreateWindowAndRenderer(Config::GAME_TITLE, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) 
+    if (!SDL_CreateWindowAndRenderer(Config::GAME_TITLE, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, SDL_WINDOW_KEYBOARD_GRABBED, &window, &renderer)) 
     {
         SDL_Log("Engine: Failed to create window/renderer: %s", SDL_GetError());
 
@@ -249,6 +249,11 @@ AudioController* Engine::getAudioController() const
 EventDispatcher* Engine::getEventDispatcher() const
 {
     return eventDispatcher;
+}
+
+SDL_Window* Engine::getWindow() const
+{
+    return window;
 }
 
 AssetManager* Engine::getAssetManager() const

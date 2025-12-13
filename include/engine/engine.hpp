@@ -54,6 +54,7 @@ class Engine
 
         AudioController* getAudioController() const;
         EventDispatcher* getEventDispatcher() const;
+	SDL_Window *getWindow() const;
         AssetManager* getAssetManager() const;
         Random* getRandomNumberGenerator() const;
         float getFPS() const;

@@ -582,12 +582,27 @@ void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 	if (state != BoxState::BOX_STATE_READY) return;
 
 	SDL_MouseMotionEvent motionEvent;
-	float mouseX, mouseY;
 	LetterInfo *letterInfo = NULL;
+	double mouseX, mouseY;
+	double mouseXRatio, mouseYRatio;
+	int windowWidth, windowHeight;
 
+	if (!SDL_GetWindowSize(gameManager->getWindow(), &windowWidth, &windowHeight))
+	{
+		SDL_Log("ObjWordSearchBox: In mouse move callback, failed to get the window size. Error: %s", SDL_GetError());
+
+		return;
+	}
+	
 	motionEvent = e.motion;
-	mouseX = motionEvent.x;
-	mouseY = motionEvent.y;
+	mouseX = (double) motionEvent.x;
+	mouseY = (double) motionEvent.y;
+
+	mouseXRatio = mouseX / windowWidth;
+	mouseYRatio = mouseY / windowHeight;
+
+	mouseX = mouseXRatio * Config::SCREEN_WIDTH;
+	mouseY = mouseYRatio * Config::SCREEN_HEIGHT;
 
 	//Check if we are over a letter
 	for (int i = 0; i < gridSize; i++)

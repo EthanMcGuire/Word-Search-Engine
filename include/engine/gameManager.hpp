@@ -163,6 +163,9 @@ class GameManager
         /// @return The EventDispatcher. Used to add event listeners and dispatch events.
         EventDispatcher* getEventDispatcher() const;
 
+	/// @brief Gets the game engines window.
+	SDL_Window *getWindow() const;
+
         /// @brief Pulls a bitmap font from the asset manager.
         /// @param name The font name.
         /// @return The font, or nullptr.
@@ -243,6 +246,7 @@ class GameManager
         Camera *camera = NULL;
 
         bool gamePaused;
+	bool fullscreen = false;
 
         bool readyToLoadRoom;
         std::string nextRoom;           //Either the room name or the rooms JSON string

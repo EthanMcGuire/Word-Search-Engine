@@ -343,6 +343,17 @@ void GameManager::keyboardCallback(SDL_Event &e)
                     ObjectDrawer::toggleGameObjectCollisionDisplays(objectManager);
                 }
                 break;
+
+		case SDLK_RETURN:
+		{
+			if (e.key.mod == SDL_KMOD_LALT || e.key.mod == SDL_KMOD_RALT)
+			{
+				fullscreen = !fullscreen;
+
+				SDL_SetWindowFullscreen(getWindow(), fullscreen);
+			}
+		}
+		break;
             }
         }
     } 
@@ -396,6 +407,11 @@ AudioController* GameManager::getAudioController() const
 EventDispatcher* GameManager::getEventDispatcher() const
 {
     return engine->getEventDispatcher();
+}
+
+SDL_Window* GameManager::getWindow() const
+{
+	return engine->getWindow();
 }
 
 /// @brief Pulls a bitmap font from the asset manager.
