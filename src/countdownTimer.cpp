@@ -16,7 +16,7 @@ CountdownTimer::CountdownTimer()
 /// @param deltaTime Time change between last and current frame.
 void CountdownTimer::update(double deltaTime)
 {
-    if (!started || paused)
+    if (!timerIsActive())
     {
         return;
     }
@@ -76,6 +76,12 @@ void CountdownTimer::startTimer()
 
     started = true;
     paused = false;
+}
+
+/// @return True if the timer is currently active.
+bool CountdownTimer::timerIsActive()
+{
+	return started && !paused;
 }
 
 /// @brief Pauses the countdown timer.

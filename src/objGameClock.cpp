@@ -29,7 +29,39 @@ ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : Rende
 /// @param deltaTime Time change in seconds since last frame.
 void ObjGameClock::update(double deltaTime)
 {
-    timer.update(deltaTime);
+    if (timer.timerIsActive())
+    {
+        timer.update(deltaTime);
+
+	timeUntilSecond -= deltaTime;
+
+	if (timeUntilSecond <= 0.0)
+	{
+		timeUntilSecond += 1.0;
+		clockHandAngle += CLOCK_HAND_ANGLE_CHANGE;
+	}
+
+	if (currentTimeChange != 0.0)
+	{
+		double deltaChange;
+		double change;
+
+		change = SDL_min(SDL_abs(currentTimeChange), deltaTime * DELTA_CURRENT_TIME_CHANGE);
+		
+		if (currentTimeChange > 0.0)
+		{
+			currentTimeChange -= change;
+			clockHandAngle -= change / 1000.0 * CLOCK_HAND_ANGLE_CHANGE; 
+		}
+		else
+		{
+			currentTimeChange += change;
+			clockHandAngle += change / 1000.0 * CLOCK_HAND_ANGLE_CHANGE; 
+		}
+
+		SDL_Log("Current time change: %f", currentTimeChange);
+	}
+    }
 
     //Update time changes
     for (int i = timeChanges.size() - 1; i >= 0; i--)
@@ -53,16 +85,32 @@ void ObjGameClock::update(double deltaTime)
 void ObjGameClock::renderGui(SDL_Renderer *renderer)
 {
 	int remainingTime, currentTimeChange;
+	double handAngleRadians;
+	SDL_Color drawColor;
 	std::string text;
 
 	//Draw the clock
 	clockTexture->renderCentered(renderer, pos[0], pos[1]);
+
+	//Draw the clock hand
+	handAngleRadians = SDL_PI_F / 180.0 * clockHandAngle;
+	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+	SDL_RenderLine(renderer, pos[0], pos[1], pos[0] + SDL_cos(handAngleRadians) * CLOCK_HAND_LENGTH, pos[1] + SDL_sin(handAngleRadians) * CLOCK_HAND_LENGTH);	
 	
 	//Draw remaining time
 	remainingTime = (int) SDL_ceil(timer.getRemainingTime() / 1000.f);
 
+	if (remainingTime <= CLOCK_LOW_TIME)
+	{
+		drawColor = {255, 0, 0, 255};
+	}
+	else
+	{
+		drawColor = {255, 255, 255, 255};
+	}
+
 	text = std::to_string(remainingTime);
-	font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1], text, {255, 255, 255, 255}, TextAlign::RIGHT, TextAlign::CENTER);
+	font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1], text, drawColor, TextAlign::RIGHT, TextAlign::CENTER);
 	
 	//Draw time changes
 	for (TimeChange timeChange : timeChanges)
@@ -96,12 +144,6 @@ void ObjGameClock::renderGui(SDL_Renderer *renderer)
 void ObjGameClock::setCallbackFunction(std::function<void()> callback)
 {
 	timer.setCallbackFunction(callback);
-}
-
-/// @brief Called when the countdown timer finishes. Initiates the game over sequence.
-void ObjGameClock::timerCompleted()
-{
-    //TODO
 }
 
 #pragma region Timer
@@ -150,6 +192,8 @@ void ObjGameClock::removeTime(int removeTime)
 void ObjGameClock::addTimeChange(int time)
 {
     double offsetY;
+
+    currentTimeChange += time;
 
     if (timeChanges.size() == 0)
     {

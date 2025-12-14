@@ -354,6 +354,16 @@ void GameManager::keyboardCallback(SDL_Event &e)
 			}
 		}
 		break;
+		
+		case SDLK_F4:
+		{
+			if (e.key.mod == SDL_KMOD_LALT || e.key.mod == SDL_KMOD_RALT)
+			{
+				endGame();
+			}
+		}
+		break;
+
             }
         }
     } 

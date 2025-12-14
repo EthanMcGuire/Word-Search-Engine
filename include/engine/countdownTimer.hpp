@@ -28,6 +28,9 @@ class CountdownTimer
         /// @brief Starts the countdown timer, resetting it to the total time.
         void startTimer();
 
+	/// @return Returns true if the timer is currently active.
+	bool timerIsActive();
+
         /// @brief Pauses the countdown timer.
         void pauseTimer();
 

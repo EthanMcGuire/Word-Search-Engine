@@ -33,9 +33,6 @@ class ObjGameClock : public RenderableObject
 	/// @param callback The callback function.
 	void setCallbackFunction(std::function<void()> callback);
 
-        /// @brief Called when the countdown timer finishes. Initiates the game over sequence.
-        void timerCompleted();
-
         #pragma region Timer
 
         /// @brief Starts the clock, resetting it to the total time.
@@ -70,10 +67,17 @@ class ObjGameClock : public RenderableObject
 	const int TIME_CHANGE_OFFSET_Y = 20;
 	const float TIME_CHANGE_OFFSET_LERP = 0.2;
 	const int TIME_CHANGE_MOVE_DELAY_MS = 1000;
+	const double CLOCK_HAND_ANGLE_CHANGE = 360 / 60;	//Angle change per second (60 seconds = full rotation)
+	const float CLOCK_HAND_LENGTH = 8;
+	const int DELTA_CURRENT_TIME_CHANGE = 20 * 1000;
+	const int CLOCK_LOW_TIME = 10;				//10 seconds before the clock should become red
 
         CountdownTimer timer;
 	BitmapFont *font;
 	Texture *clockTexture;
+	double timeUntilSecond = 1.0;
+	double currentTimeChange = 0.0;
+	double clockHandAngle = -90;
 
 	std::vector<TimeChange> timeChanges;
 };
