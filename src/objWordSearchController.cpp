@@ -24,11 +24,18 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	
 	wordSearchBox = gameManager->createObject<ObjWordSearchBox>("objWordSearchBox", 480, 270);
 	wordSearchBox->setReadyCallback(std::bind(&ObjWordSearchController::boxReadyCallback, this));
+	wordSearchBox->setWordsFoundCallback(std::bind(&ObjWordSearchController::wordsFoundCallback, this, std::placeholders::_1));
+	wordSearchBox->setWrongLetterCallback(std::bind(&ObjWordSearchController::wrongLetterCallback, this));
 
 	gameClock = gameManager->createObject<ObjGameClock>("objGameClock", 896, 20);
 	gameClock->setCallbackFunction(std::bind(&ObjWordSearchController::gameClockCompletedCallback, this));
 	gameClock->setTime(STARTING_TIME);
 	gameClock->startTimer();
+
+	wordLengthScoreMapping.push_back({5, 250});
+	wordLengthScoreMapping.push_back({10, 200});
+	wordLengthScoreMapping.push_back({20, 150});
+	wordLengthScoreMapping.push_back({50, 100});
 
 	resetGameData();	
 	startNextLevel();
@@ -64,23 +71,60 @@ void ObjWordSearchController::update(double deltaTime)
 void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 {
 	std::string text = "";
+	int drawX, drawY;
 
-	text += std::string("LEVEL: ") + std::to_string(level) + "/n";
-	text += std::string("SCORE: ") + std::to_string(score) + "/n";
-	text += "WORDS/n";
+	drawX = 4;
+	drawY = 4;
+
+	text = std::string("LEVEL: ") + std::to_string(level);
+	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
+	drawY += font->getTextHeight(text) + GUI_WORD_SEP_Y;
+	
+	text = std::string("SCORE: ") + std::to_string(score);
+	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
+	drawY += font->getTextHeight(text) + GUI_WORD_SEP_Y;
+
+	text = "WORDS";
+	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
+	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+	SDL_RenderLine(renderer, drawX, drawY + 2 + font->getTextHeight(text), drawX + font->getTextWidth(text), drawY + 2 + font->getTextHeight(text));
+
+	drawX += GUI_WORDS_OFFSET_X;
+	drawY += font->getTextHeight(text) + GUI_WORDS_OFFSET_Y;
 
 	//Only draw words if we are in an active game
 	if (state == WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME)
 	{
-
-		for (std::string word : currentWords)
+		for (int i = 0; i < currentWords.size(); i++)
 		{
-			text += " ";
-			text += word + "/n";
-		}	
+			int textHeight;
+			SDL_Color drawColor;
+			
+			text = currentWords[i];
+			textHeight = font->getTextHeight(text);
+
+			if (!wordsFound[i])
+			{
+				drawColor = {255, 255, 255, 255};
+			}
+			else
+			{
+				drawColor = {255, 0, 0, 255};
+			}
+
+			font->drawTextOutlined(renderer, drawX, drawY, text, drawColor, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
+
+			if (wordsFound[i])
+			{
+				//FOUND! CROSS OUT
+				SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+				SDL_RenderLine(renderer, drawX, drawY + textHeight / 2, drawX + font->getTextWidth(text), drawY + textHeight / 2);
+			}
+
+			drawY += textHeight + 4;
+		}
 	}
 
-	font->drawTextOutlined(renderer, 4, 4, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
 }
 
 void ObjWordSearchController::resetGameData()
@@ -146,7 +190,7 @@ void ObjWordSearchController::loadWords(std::string path)
 void ObjWordSearchController::startNextLevel()
 {
 	level++;
-	difficulty++;
+	difficulty = SDL_min(difficulty + 1, MAX_DIFFICULTY);
 	gridSize = STARTING_GRID_SIZE + (difficulty - 1) * 2;
 	wordCountMin = STARTING_MIN_WORD_COUNT + (difficulty / 4);
 	wordCountMax = STARTING_MAX_WORD_COUNT + (difficulty / 4);
@@ -169,6 +213,7 @@ void ObjWordSearchController::getWords()
 	SDL_Log("ObjWordSearchController: Getting words...");
 
 	currentWords.clear();
+	wordsFound.clear();
 
 	random = gameManager->getRandom();
 	wordCount = random->getRandomInt(wordCountMin, wordCountMax);
@@ -190,6 +235,7 @@ void ObjWordSearchController::getWords()
 		while (std::find(currentWords.begin(), currentWords.end(), word) != currentWords.end());
 		
 		currentWords.push_back(word);
+		wordsFound.push_back(false);
 	} 
 
 	SDL_Log("ObjWordSearchController: Got words.");
@@ -212,4 +258,80 @@ void ObjWordSearchController::gameClockCompletedCallback()
 	
 	//Won't do this normally!!!
 	gameManager->setRoomToLoad("titlescreen");
+}
+
+/// @brief Called by the WordSearchBox when the wrong letter is selected.
+void ObjWordSearchController::wrongLetterCallback()
+{
+	gameClock->removeTime(WRONG_LETTER_TIME_LOSS);
+}
+
+/// @brief Called by the WordSearchBox when one or more words were found.
+/// @param words The list of words that were found.
+void ObjWordSearchController::wordsFoundCallback(std::vector<std::string> words)
+{
+	SDL_Log("ObjWordSearchController: Found %ld words!", words.size());
+
+	//Set words as found
+	for (int i = 0; i < currentWords.size(); i++)
+	{
+		if (std::find(words.begin(), words.end(), currentWords[i]) != words.end())
+		{
+			if (wordsFound[i])
+			{
+				SDL_Log("ObjWordSearchController: Warning! For some reason a word is being marked as found more than once. Word: %s", currentWords[i].c_str());
+			}
+
+			wordsFound[i] = true;
+		}
+	}
+
+	int scoreToAdd;
+	float multiplier;
+
+	//Calculate and add score
+	scoreToAdd = 0;
+	multiplier = 1;
+
+	for (std::string word : words)
+	{
+		int wordScore;
+
+		wordScore = getWordLengthScore(word.length());
+
+		scoreToAdd += wordScore;
+	}
+
+	multiplier += (difficulty - 1) * DIFFICULTY_MULTIPLIER;
+	multiplier += (words.size() - 1) * WORD_BONUS_MULTIPLIER;
+
+	SDL_Log("ObjWordSearchController: Adding score. Score: %d, Multiplier: %f", scoreToAdd, multiplier);
+
+	addScore((int) scoreToAdd * multiplier);
+
+	//Add clock time, based on the number of words
+	gameClock->addTime(CORRECT_WORD_TIME_ADD * words.size());
+}
+
+int ObjWordSearchController::getWordLengthScore(int length)
+{
+	for (std::pair<int, int> pair : wordLengthScoreMapping)
+	{
+		if (length <= pair.first)
+		{
+			return pair.second;
+		}
+	}
+
+	return wordLengthScoreMapping.back().second;
+}
+
+void ObjWordSearchController::addScore(int scoreToAdd)
+{
+	//TODO
+	//Add score over time instead
+	//TODO
+	//Make a more vibrant effect based on the amount of score being added 
+	
+	score += scoreToAdd;
 }

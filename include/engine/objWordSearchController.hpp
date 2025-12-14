@@ -38,15 +38,35 @@ class ObjWordSearchController : public RenderableObject
 		void boxReadyCallback();
 		void gameClockCompletedCallback();
 
+		/// @bried Called by the WordSearchBox when a wrong letter is selected.
+		void wrongLetterCallback();
+
+		/// @brief Called by the WordSearchBox when one or more words were found.
+		/// @param words The list of words that were found.
+		void wordsFoundCallback(std::vector<std::string> words);
+
+		int getWordLengthScore(int length);
+		void addScore(int scoreToAdd);
+
+		const int GUI_WORD_SEP_Y = 8;
+		const int GUI_WORDS_OFFSET_X = 8;
+		const int GUI_WORDS_OFFSET_Y = 12;
 		const int STARTING_TIME = 60000;
+		const int WRONG_LETTER_TIME_LOSS = 5000;
+		const int CORRECT_WORD_TIME_ADD = 5000;
 		const int STARTING_GRID_SIZE = 6;
 		const int STARTING_MIN_WORD_COUNT = 2;
 		const int STARTING_MAX_WORD_COUNT = 3;
 		const int MIN_WORD_LENGTH = 3;	//This will never change. Word length will be MIN_WORD_LENGTH -> GRID_SIZE (Capped at MAX_WORD_LENGTH) 
 		const int MAX_WORD_LENGTH = 31;
+		const int MAX_DIFFICULTY = 20;
+		const float DIFFICULTY_MULTIPLIER = 0.1;	//Score multiplier added based on difficulty (only if difficulty is above 1)
+		const float WORD_BONUS_MULTIPLIER = 0.25;	//Score multiplier added based on the number of words (every extra word is what adds the bonus. So 2 words gets +0.25 multiplier)
 
 		std::unordered_map<unsigned int, std::vector<std::string>> words;	//Maps character count to a list of words containing that many characters
 		std::vector<std::string> currentWords;
+		std::vector<bool> wordsFound;
+		std::vector<std::pair<int, int>> wordLengthScoreMapping;
 
 		BitmapFont *font;
 		ObjWordSearchBox *wordSearchBox;

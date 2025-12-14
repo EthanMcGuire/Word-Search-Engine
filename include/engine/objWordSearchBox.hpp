@@ -37,6 +37,7 @@ struct LetterInfo
 	LetterState state;
 	float x, y;
 	unsigned int width, height;
+	bool crossed = false;
 };
 
 class ObjWordSearchBox : public RenderableObject
@@ -49,6 +50,8 @@ class ObjWordSearchBox : public RenderableObject
 		void renderGui(SDL_Renderer *renderer) override;
 
 		void setReadyCallback(std::function<void()> callback);
+		void setWordsFoundCallback(std::function<void(std::vector<std::string>)> callback);
+		void setWrongLetterCallback(std::function<void()> callback);
 
 		void initializeGrid(int size, std::vector<std::string> words);
 		void gameOver();
@@ -78,8 +81,6 @@ class ObjWordSearchBox : public RenderableObject
 		const int BOX_SIZE_BASE = 24;		
 		const int BOX_LETTER_MARGIN = 18;
 
-		const int BONUS_BASE_MULTIPLIER = 0.50;	//Bonus score multiplier for selecting multiple words at the same time
-
 		BitmapFont *font;
 		NineSlice *box;
 		DrawingSurface *letterSurface;
@@ -95,10 +96,12 @@ class ObjWordSearchBox : public RenderableObject
 		LetterInfo *hoveredLetter = NULL;
 		int hoveredLetterGridX, hoveredLetterGridY;
 		LetterInfo** grid = NULL;
-		int** wordGrid = NULL;	//Maps the locations for our words on the grid
 		bool showWords = false;
 
-		std::function<void()> readyCallback;
+		std::function<void()> readyCallback = NULL;
+		std::function<void(std::vector<std::string>)> wordsFoundCallback = NULL;
+		std::function<void()> wrongLetterCallback = NULL;
+
 		uint32_t mouseButtonDownEventListenerId;
 		uint32_t mouseButtonUpEventListenerId;
 		uint32_t mouseMoveEventListenerId;

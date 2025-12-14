@@ -59,7 +59,7 @@ void ObjGameClock::update(double deltaTime)
 			clockHandAngle += change / 1000.0 * CLOCK_HAND_ANGLE_CHANGE; 
 		}
 
-		SDL_Log("Current time change: %f", currentTimeChange);
+		//SDL_Log("Current time change: %f", currentTimeChange);
 	}
     }
 

@@ -131,6 +131,25 @@ void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 	box->render(renderer, pos[0], pos[1]);	
 	
 	drawLetters(renderer);	
+
+	//Draw crossed words
+	SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+
+	for (Word* word : currentWords)
+	{
+		if (word->found)
+		{
+			float startX, startY;
+			float endX, endY;
+
+			startX = grid[word->letterLocations[0].first][word->letterLocations[0].second].x;
+			startY = grid[word->letterLocations[0].first][word->letterLocations[0].second].y;
+			endX = grid[word->letterLocations.back().first][word->letterLocations.back().second].x;
+			endY = grid[word->letterLocations.back().first][word->letterLocations.back().second].y;
+
+			SDL_RenderLine(renderer, startX, startY, endX, endY);
+		}
+	}
 }
 
 void ObjWordSearchBox::drawLetters(SDL_Renderer *renderer)
@@ -208,6 +227,16 @@ void ObjWordSearchBox::drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo)
 void ObjWordSearchBox::setReadyCallback(std::function<void()> callback)
 {
 	readyCallback = std::move(callback);
+}
+
+void ObjWordSearchBox::setWordsFoundCallback(std::function<void(std::vector<std::string>)> callback)
+{
+	wordsFoundCallback = std::move(callback);
+}
+
+void ObjWordSearchBox::setWrongLetterCallback(std::function<void()> callback)
+{
+	wrongLetterCallback = std::move(callback);
 }
 
 void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
@@ -609,31 +638,38 @@ void ObjWordSearchBox::mouseButtonCallback(SDL_Event &e)
 			//Success!
 			SDL_Log("Correct word found!");
 
-			//NOTE
-			//BONUS POINTS BASED ON THE NUMBER OF WORDS WE GOT!
-			int multiplier;
-			int scoreToAdd;
-			int baseWordScore;
-			int totalBaseScore;
-		       
-			multiplier = 1 + (BONUS_BASE_MULTIPLIER * validWordCount - 1);
+			if (wordsFoundCallback == NULL)
+			{
+				throw std::runtime_error("ObjWordSearchBox: wordsFoundCallback callback was not set.");
+			}
 
-			//TODO
-			//Calculate the word score. Do this based on difficulty, and word length (Smaller words should give more points (I think))
-			baseWordScore = 100;
+			std::vector<std::string> wordStrings;
 
-			//TODO
-			//Calculate the totalBaseScore by added EVERY baseWordScore
-		
-			scoreToAdd = totalBaseScore * multiplier;
+			for (Word* word : words)
+			{
+				wordStrings.push_back(word->word);
+				word->found = true;
+				
+				for (std::pair<int, int> location : word->letterLocations)
+				{
+					grid[location.first][location.second].state = LetterState::LETTER_STATE_CROSSED;
+					grid[location.first][location.second].crossed = true;
+				}
+			}
 
-			//TODO
-			//Make a more vibrant visual effect based on the multiplier value (IE: 1.5x create explosion, because selecting multiple words at once is COOL)
+			wordsFoundCallback(wordStrings);
 		}
 		else
 		{
 			//WRONG ASSHOLE
 			SDL_Log("WRONG LETTER ASSHOLE");
+
+			if (wrongLetterCallback == NULL)
+			{
+				throw std::runtime_error("ObjWordSearchBox: wordsFoundCallback callback was not set.");
+			}
+
+			wrongLetterCallback();
 		}
 	}
 	else
@@ -719,7 +755,15 @@ void ObjWordSearchBox::clearHoveredLetter()
 {
 	if (hoveredLetter != NULL)
 	{
-		hoveredLetter->state = LetterState::LETTER_STATE_NORMAL;
+		if (hoveredLetter->crossed)
+		{
+			hoveredLetter->state = LetterState::LETTER_STATE_CROSSED;
+		}
+		else
+		{
+			hoveredLetter->state = LetterState::LETTER_STATE_NORMAL;
+		}
+
 		hoveredLetter = NULL;
 	}
 }
