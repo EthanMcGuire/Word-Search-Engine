@@ -57,6 +57,7 @@ class ObjWordSearchBox : public RenderableObject
 		void drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo);
 
 		void clearGrid();
+		void clearCurrentWords();
 		void populateWords(std::vector<std::string> words);
 		void addWordToGrid(std::string);
 
@@ -68,13 +69,16 @@ class ObjWordSearchBox : public RenderableObject
 
 		void mouseButtonCallback(SDL_Event &e);
 		void mouseMoveCallback(SDL_Event &e);
-
 		void clearHoveredLetter();
+
+		std::vector<Word*> getWordsAtGridLocation(int gridX, int gridY);
 
 		const int MIN_BOX_SIZE = 32;
 		const int DELTA_BOX_SIZE = 256;
 		const int BOX_SIZE_BASE = 24;		
 		const int BOX_LETTER_MARGIN = 18;
+
+		const int BONUS_BASE_MULTIPLIER = 0.50;	//Bonus score multiplier for selecting multiple words at the same time
 
 		BitmapFont *font;
 		NineSlice *box;
@@ -87,8 +91,9 @@ class ObjWordSearchBox : public RenderableObject
 		int boxLetterMargin;	//Inner box masrgin for letters
 		int gridSize;
 
-		std::vector<Word> currentWords;
+		std::vector<Word*> currentWords;
 		LetterInfo *hoveredLetter = NULL;
+		int hoveredLetterGridX, hoveredLetterGridY;
 		LetterInfo** grid = NULL;
 		int** wordGrid = NULL;	//Maps the locations for our words on the grid
 		bool showWords = false;

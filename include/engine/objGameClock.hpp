@@ -68,7 +68,7 @@ class ObjGameClock : public RenderableObject
 	const float TIME_CHANGE_OFFSET_LERP = 0.2;
 	const int TIME_CHANGE_MOVE_DELAY_MS = 1000;
 	const double CLOCK_HAND_ANGLE_CHANGE = 360 / 60;	//Angle change per second (60 seconds = full rotation)
-	const float CLOCK_HAND_LENGTH = 8;
+	const float CLOCK_HAND_LENGTH = 9;
 	const int DELTA_CURRENT_TIME_CHANGE = 20 * 1000;
 	const int CLOCK_LOW_TIME = 10;				//10 seconds before the clock should become red
 

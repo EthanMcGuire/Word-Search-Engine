@@ -64,6 +64,7 @@ ObjWordSearchBox::~ObjWordSearchBox()
 	delete letterSurface;
 	
 	clearGrid();
+	clearCurrentWords();
 }
 
 void ObjWordSearchBox::update(double deltaTime)
@@ -217,17 +218,14 @@ void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 	boxSizeGoal = boxSizeBase * gridSize;
 
 	grid = new LetterInfo*[gridSize];
-	wordGrid = new int*[gridSize];
 
 	for (int i = 0; i < gridSize; i++)
 	{
 		grid[i] = new LetterInfo[gridSize];
-		wordGrid[i] = new int[gridSize];
 
 		for (int j = 0; j < gridSize; j++)
 		{
-			grid[i][j] = {'A', LetterState::LETTER_STATE_NORMAL, 0, 0, 0, 0};
-			wordGrid[i][j] = -1;
+			grid[i][j] = {'?', LetterState::LETTER_STATE_NORMAL, 0, 0, 0, 0};
 		}
 	}
 
@@ -255,15 +253,22 @@ void ObjWordSearchBox::clearGrid()
 		for (int i = 0; i < gridSize; i++)
 		{
 			delete[] grid[i];
-			delete[] wordGrid[i];
 		}
 
 		delete[] grid;
-		delete[] wordGrid;
 
 		grid = NULL;
-		wordGrid = NULL;
 	}
+}
+
+void ObjWordSearchBox::clearCurrentWords()
+{
+	for (Word* word : currentWords)
+	{
+		delete word;
+	}
+
+	currentWords.clear();
 }
 
 void ObjWordSearchBox::populateWords(std::vector<std::string> words)
@@ -273,7 +278,7 @@ void ObjWordSearchBox::populateWords(std::vector<std::string> words)
 		throw std::runtime_error("ObjWordSearchBox: Attempted to populate words when grid is NULL!");
 	}
 
-	currentWords.clear();
+	clearCurrentWords();
 
 	//Sorts words in descending order. We do this to place the biggest words on the grid first
 	std::sort(words.begin(), words.end(), [] (std::string &lhs, std::string &rhs) {
@@ -282,8 +287,7 @@ void ObjWordSearchBox::populateWords(std::vector<std::string> words)
 
 	for (std::string word : words)
 	{
-		SDL_Log("ObjWordSearchBox: Added word: %s", word.c_str());
-		currentWords.push_back({word, false});
+		SDL_Log("ObjWordSearchBox: Adding word: %s", word.c_str());
 
 		//Add to the grid
 		addWordToGrid(word);
@@ -294,7 +298,7 @@ void ObjWordSearchBox::populateWords(std::vector<std::string> words)
 	{
 		for (int j = 0; j < gridSize; j++)
 		{
-			if (wordGrid[i][j] == -1)
+			if (grid[i][j].letter == '?')
 			{
 				grid[i][j].letter = gameManager->getRandom()->getRandomInt(65, 90);
 				grid[i][j].width = font->getCharWidth(grid[i][j].letter);
@@ -306,16 +310,13 @@ void ObjWordSearchBox::populateWords(std::vector<std::string> words)
 
 void ObjWordSearchBox::addWordToGrid(std::string word)
 {
-	int index;
 	int length;
 	bool success;
 	Random *random;
 
 	random = gameManager->getRandom();
 
-	index = currentWords.size();
 	length = word.length();
-	currentWords.push_back({word, false});	
 
 	success = false;
 
@@ -457,7 +458,7 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 				curX = xPos + xDir * pos;
 				curY = yPos + yDir * pos;
 
-				if (wordGrid[curX][curY] != -1)
+				if (grid[curY][curX].letter != '?')
 				{
 					hitWord = true;
 					break;
@@ -469,8 +470,9 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 			
 			if (!hitWord)
 			{	
-				success = true;
-				
+				Word *newWord;
+				std::vector<std::pair<int, int>> letterLocations;
+
 				//Place the word in our grid
 				for (int pos = 0; pos < length; pos++)
 				{
@@ -479,11 +481,23 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 					curX = xPos + xDir * pos;
 					curY = yPos + yDir * pos;
 
-					grid[curX][curY].letter = word[pos];
-					grid[curX][curY].width = font->getCharWidth(grid[curX][curY].letter);
-					grid[curX][curY].height = font->getCharHeight(grid[curX][curY].letter);
+					grid[curY][curX].letter = word[pos];
+					grid[curY][curX].width = font->getCharWidth(grid[curY][curX].letter);
+					grid[curY][curX].height = font->getCharHeight(grid[curY][curX].letter);
 
-					wordGrid[curX][curY] = index;
+					letterLocations.push_back({curY, curX});
+				}
+
+				newWord = new Word({word, false, letterLocations});
+				currentWords.push_back(newWord);
+
+				success = true;
+
+				SDL_Log("ObjWordSearchBox: Added word. Word: %s, LetterLocations:", word.c_str());
+
+				for (std::pair<int, int> pair : letterLocations)
+				{
+					SDL_Log("Y = %d, X = %d", pair.first, pair.second);
 				}
 
 				break;
@@ -570,6 +584,57 @@ void ObjWordSearchBox::mouseButtonCallback(SDL_Event &e)
 	if (e.button.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 	{
 		hoveredLetter->state = LetterState::LETTER_STATE_PRESSED;
+
+		int validWordCount;
+		std::vector<Word*> words;
+
+		words = getWordsAtGridLocation(hoveredLetterGridX, hoveredLetterGridY);
+
+		//Remove words that are already found 
+		for (int i = words.size() - 1; i >= 0; i--)
+		{
+			if (words[i]->found)
+			{
+				SDL_Log("ObjWordSearchBox: Word was already found. Ignoring.");
+
+				words.erase(words.begin() + i);
+			}
+		}
+
+		validWordCount = words.size();
+		
+		//At least 1 un-found word as selected?
+		if (validWordCount > 0)
+		{
+			//Success!
+			SDL_Log("Correct word found!");
+
+			//NOTE
+			//BONUS POINTS BASED ON THE NUMBER OF WORDS WE GOT!
+			int multiplier;
+			int scoreToAdd;
+			int baseWordScore;
+			int totalBaseScore;
+		       
+			multiplier = 1 + (BONUS_BASE_MULTIPLIER * validWordCount - 1);
+
+			//TODO
+			//Calculate the word score. Do this based on difficulty, and word length (Smaller words should give more points (I think))
+			baseWordScore = 100;
+
+			//TODO
+			//Calculate the totalBaseScore by added EVERY baseWordScore
+		
+			scoreToAdd = totalBaseScore * multiplier;
+
+			//TODO
+			//Make a more vibrant visual effect based on the multiplier value (IE: 1.5x create explosion, because selecting multiple words at once is COOL)
+		}
+		else
+		{
+			//WRONG ASSHOLE
+			SDL_Log("WRONG LETTER ASSHOLE");
+		}
 	}
 	else
 	{
@@ -586,6 +651,7 @@ void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 	double mouseX, mouseY;
 	double mouseXRatio, mouseYRatio;
 	int windowWidth, windowHeight;
+	int gridX, gridY;
 
 	if (!SDL_GetWindowSize(gameManager->getWindow(), &windowWidth, &windowHeight))
 	{
@@ -605,15 +671,15 @@ void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 	mouseY = mouseYRatio * Config::SCREEN_HEIGHT;
 
 	//Check if we are over a letter
-	for (int i = 0; i < gridSize; i++)
+	for (gridY = 0; gridY < gridSize; gridY++)
 	{
-		for (int j = 0; j < gridSize; j++)
+		for (gridX = 0; gridX < gridSize; gridX++)
 		{
 			float left, top, right, bottom;
 			unsigned int bboxSize;
 			LetterInfo *nextLetterInfo;
 
-			nextLetterInfo = &grid[i][j];
+			nextLetterInfo = &grid[gridY][gridX];
 			bboxSize = SDL_max(nextLetterInfo->width, nextLetterInfo->height);
 
 			left = nextLetterInfo->x - (bboxSize / 2.f);
@@ -627,6 +693,8 @@ void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 				break;
 			}			
 		}
+
+		if (letterInfo != NULL) break;
 	}	
 
 	if (letterInfo != NULL)
@@ -636,6 +704,8 @@ void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 			clearHoveredLetter();
 
 			hoveredLetter = letterInfo;
+			hoveredLetterGridX = gridX;
+			hoveredLetterGridY = gridY;
 			hoveredLetter->state = LetterState::LETTER_STATE_HOVERED;
 		}
 	}
@@ -652,4 +722,26 @@ void ObjWordSearchBox::clearHoveredLetter()
 		hoveredLetter->state = LetterState::LETTER_STATE_NORMAL;
 		hoveredLetter = NULL;
 	}
+}
+
+std::vector<Word*> ObjWordSearchBox::getWordsAtGridLocation(int gridX, int gridY)
+{
+	std::vector<Word*> words;
+
+	SDL_Log("Getting words at location Y: %d, X: %d", gridY, gridX);
+
+	for (Word* word : currentWords)
+	{
+		for (std::pair<int, int> pair : word->letterLocations)
+		{
+			if (pair.first == gridY && pair.second == gridX)
+			{
+				words.push_back(word);
+
+				break;
+			}
+		}
+	}
+
+	return words;
 }
