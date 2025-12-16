@@ -2,6 +2,7 @@
 #define OBJ_WORD_SEARCH_CONTROLLER_H
 
 #include "renderableObject.hpp"
+#include "objRose.hpp"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -46,8 +47,11 @@ class ObjWordSearchController : public RenderableObject
 		void wordsFoundCallback(std::vector<std::string> words);
 
 		int getWordLengthScore(int length);
+		void createRoses(double x, double y, int scoreToAdd);
+		void createRose(double x, double y, RoseSize size, int score);
 		void addScore(int scoreToAdd);
 
+		const int GUI_TEXT_OFFSET = 4;
 		const int GUI_WORD_SEP_Y = 8;
 		const int GUI_WORDS_OFFSET_X = 8;
 		const int GUI_WORDS_OFFSET_Y = 12;
@@ -62,6 +66,7 @@ class ObjWordSearchController : public RenderableObject
 		const int MAX_DIFFICULTY = 20;
 		const float DIFFICULTY_MULTIPLIER = 0.1;	//Score multiplier added based on difficulty (only if difficulty is above 1)
 		const float WORD_BONUS_MULTIPLIER = 0.25;	//Score multiplier added based on the number of words (every extra word is what adds the bonus. So 2 words gets +0.25 multiplier)
+		const int ROSE_CREATION_RANGE = 32;
 
 		std::unordered_map<unsigned int, std::vector<std::string>> words;	//Maps character count to a list of words containing that many characters
 		std::vector<std::string> currentWords;

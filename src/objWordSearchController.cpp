@@ -73,8 +73,8 @@ void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 	std::string text = "";
 	int drawX, drawY;
 
-	drawX = 4;
-	drawY = 4;
+	drawX = GUI_TEXT_OFFSET;
+	drawY = GUI_TEXT_OFFSET;
 
 	text = std::string("LEVEL: ") + std::to_string(level);
 	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
@@ -191,7 +191,7 @@ void ObjWordSearchController::startNextLevel()
 {
 	level++;
 	difficulty = SDL_min(difficulty + 1, MAX_DIFFICULTY);
-	gridSize = STARTING_GRID_SIZE + (difficulty - 1) * 2;
+	gridSize = STARTING_GRID_SIZE + (difficulty - 1) * 1;
 	wordCountMin = STARTING_MIN_WORD_COUNT + (difficulty / 4);
 	wordCountMax = STARTING_MAX_WORD_COUNT + (difficulty / 4);
 	
@@ -288,6 +288,8 @@ void ObjWordSearchController::wordsFoundCallback(std::vector<std::string> words)
 
 	int scoreToAdd;
 	float multiplier;
+	float mouseX, mouseY;
+	int windowWidth, windowHeight;
 
 	//Calculate and add score
 	scoreToAdd = 0;
@@ -307,7 +309,19 @@ void ObjWordSearchController::wordsFoundCallback(std::vector<std::string> words)
 
 	SDL_Log("ObjWordSearchController: Adding score. Score: %d, Multiplier: %f", scoreToAdd, multiplier);
 
-	addScore((int) scoreToAdd * multiplier);
+	SDL_GetMouseState(&mouseX, &mouseY);
+
+	if (!SDL_GetWindowSize(gameManager->getWindow(), &windowWidth, &windowHeight))
+	{
+		SDL_Log("ObjWordSearchController: Failed to get window size when preparing to create roses. Error: %s", SDL_GetError());
+
+		return;
+	}
+	
+	mouseX = (mouseX / windowWidth) * Config::SCREEN_WIDTH;
+	mouseY = (mouseY / windowHeight) * Config::SCREEN_HEIGHT;
+
+	createRoses(mouseX, mouseY, (int) scoreToAdd * multiplier);
 
 	//Add clock time, based on the number of words
 	gameClock->addTime(CORRECT_WORD_TIME_ADD * words.size());
@@ -326,12 +340,63 @@ int ObjWordSearchController::getWordLengthScore(int length)
 	return wordLengthScoreMapping.back().second;
 }
 
+void ObjWordSearchController::createRoses(double x, double y, int scoreToAdd)
+{
+	Random *random;
+
+	random = gameManager->getRandom();
+
+	//TODO
+	//Make a more vibrant effect based on the amount of score being added 
+	
+	while (scoreToAdd > 0)
+	{
+		RoseSize size;
+		int score;
+		double roseX, roseY;
+
+		if (scoreToAdd >= 50)
+		{
+			score = 50;
+			size = RoseSize::ROSE_SIZE_LARGE;
+		}
+		else if (scoreToAdd >= 5)
+		{
+			score = 5;
+			size = RoseSize::ROSE_SIZE_MEDIUM;
+		}
+		else
+		{
+			score = 1;
+			size = RoseSize::ROSE_SIZE_SMALL;
+		}
+
+		scoreToAdd -= score;
+
+		roseX = x + random->getRandomInt(-ROSE_CREATION_RANGE, ROSE_CREATION_RANGE);
+		roseY = y + random->getRandomInt(-ROSE_CREATION_RANGE, ROSE_CREATION_RANGE);
+
+		createRose(roseX, roseY, size, score);
+	}
+}
+
+void ObjWordSearchController::createRose(double x, double y, RoseSize size, int score)
+{
+	ObjRose *rose;
+	double goalX, goalY;
+	
+	goalX = GUI_TEXT_OFFSET + font->getTextWidth("SCORE: ") / 2.0;
+	goalY = GUI_TEXT_OFFSET + font->getTextHeight("LEVEL: ") + GUI_WORD_SEP_Y + font->getTextHeight("SCORE: ") / 2.0;
+
+	rose = gameManager->createObject<ObjRose>("objRose", x, y, goalX, goalY, score);
+	rose->setRoseSize(size);
+	rose->setAddScoreCallback(std::bind(&ObjWordSearchController::addScore, this, std::placeholders::_1));
+}
+
 void ObjWordSearchController::addScore(int scoreToAdd)
 {
 	//TODO
 	//Add score over time instead
-	//TODO
-	//Make a more vibrant effect based on the amount of score being added 
 	
 	score += scoreToAdd;
 }

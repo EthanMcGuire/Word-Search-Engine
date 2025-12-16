@@ -14,7 +14,7 @@ class ObjectFactory
 {
     public:
         //Don't make instances of this class
-		ObjectFactory()=delete;
+	    ObjectFactory()=delete;
 	    ObjectFactory(const ObjectFactory&)=delete;
 	    ObjectFactory(ObjectFactory&&)=delete;
 

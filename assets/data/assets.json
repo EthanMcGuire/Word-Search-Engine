@@ -17,6 +17,18 @@
             "assetType": "texture"  
         },
 	{
+            "filePath": "assets/texture/rose/rose.png",
+            "assetType": "texture"  
+        },
+	{
+            "filePath": "assets/texture/rose/rose_small.png",
+            "assetType": "texture"  
+        },
+	{
+            "filePath": "assets/texture/rose/rose_medium.png",
+            "assetType": "texture"  
+        },
+	{
             "filePath": "assets/texture/wordSearchBox.png",
             "assetType": "atlas",
  	    "spriteWidth": 8,
