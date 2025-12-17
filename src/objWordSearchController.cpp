@@ -21,7 +21,13 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	{
 		throw std::runtime_error("ObjWordSearchController: Failed to load font.");
 	}
+
+	//Calculate the GUI y offsets
+	scoreYOffset = GUI_TEXT_OFFSET + font->getTextHeight("LEVEL: ") + GUI_TEXT_SEP_Y; 
+	wordsHeaderYOffset = scoreYOffset + font->getTextHeight("SCORE: ") + GUI_TEXT_SEP_Y;
+	wordsYOffset = wordsHeaderYOffset + font->getTextHeight("WORDS") + GUI_WORDS_OFFSET_Y;
 	
+	//Create objects
 	wordSearchBox = gameManager->createObject<ObjWordSearchBox>("objWordSearchBox", 480, 270);
 	wordSearchBox->setReadyCallback(std::bind(&ObjWordSearchController::boxReadyCallback, this));
 	wordSearchBox->setWordsFoundCallback(std::bind(&ObjWordSearchController::wordsFoundCallback, this, std::placeholders::_1));
@@ -32,11 +38,13 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	gameClock->setTime(STARTING_TIME);
 	gameClock->startTimer();
 
+	//Score mappings
 	wordLengthScoreMapping.push_back({5, 250});
 	wordLengthScoreMapping.push_back({10, 200});
 	wordLengthScoreMapping.push_back({20, 150});
 	wordLengthScoreMapping.push_back({50, 100});
 
+	//Start the game
 	resetGameData();	
 	startNextLevel();
 }
@@ -45,15 +53,57 @@ void ObjWordSearchController::update(double deltaTime)
 {
 	switch (state)
 	{
-		case WordSearchState::WORD_SEARCH_STATE_WAITING_FOR_BOX:
+		case WordSearchState::WORD_SEARCH_STATE_STARTING_ROUND:
 		{
+			bool wordsDone = true;
+
 			//Waiting for a callback
+
+			//Send out words
+			//
+			if (wordsDone && boxReady)
+			{
+				wordSearchBox->setAsActive();
+				gameClock->unpauseTimer();
+
+				state = WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME;
+			}	
 		}
 		break;
 
 		case WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME:
 		{
-			//Waiting for game over, or for box to have all words found	
+			bool allWordsCompleted = true;
+
+			for (WordInfo word : currentWords)
+			{
+				if (!word.found)
+				{
+					allWordsCompleted = false;
+					break;
+				}
+			}
+
+			//Round completed successfully?
+			if (allWordsCompleted)
+			{
+				state = WordSearchState::WORD_SEARCH_STATE_ENDING_ROUND;
+				wordSearchBox->shrinkBox();
+				gameClock->pauseTimer();
+			}
+		}
+		break;
+
+		case WordSearchState::WORD_SEARCH_STATE_ENDING_ROUND:
+		{
+			bool wordsDone = false;
+
+			//Collapse all words, adding score and time for each one
+			//
+			if (wordsDone)
+			{
+				startNextLevel();
+			}
 		}
 		break;
 		
@@ -78,53 +128,51 @@ void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 
 	text = std::string("LEVEL: ") + std::to_string(level);
 	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
-	drawY += font->getTextHeight(text) + GUI_WORD_SEP_Y;
 	
+	drawY = scoreYOffset;
+
 	text = std::string("SCORE: ") + std::to_string(score);
 	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
-	drawY += font->getTextHeight(text) + GUI_WORD_SEP_Y;
+
+	drawY = wordsHeaderYOffset;
 
 	text = "WORDS";
 	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	SDL_RenderLine(renderer, drawX, drawY + 2 + font->getTextHeight(text), drawX + font->getTextWidth(text), drawY + 2 + font->getTextHeight(text));
 
-	drawX += GUI_WORDS_OFFSET_X;
-	drawY += font->getTextHeight(text) + GUI_WORDS_OFFSET_Y;
+	drawX = GUI_TEXT_OFFSET + GUI_WORDS_OFFSET_X;
+	drawY = wordsYOffset;
 
-	//Only draw words if we are in an active game
-	if (state == WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME)
+	drawWords(renderer);
+}
+
+void ObjWordSearchController::drawWords(SDL_Renderer *renderer)
+{
+	for (WordInfo word : currentWords)
 	{
-		for (int i = 0; i < currentWords.size(); i++)
+		SDL_Color drawColor;
+		
+		if (!word.found)
 		{
-			int textHeight;
-			SDL_Color drawColor;
-			
-			text = currentWords[i];
-			textHeight = font->getTextHeight(text);
-
-			if (!wordsFound[i])
-			{
-				drawColor = {255, 255, 255, 255};
-			}
-			else
-			{
-				drawColor = {255, 0, 0, 255};
-			}
-
-			font->drawTextOutlined(renderer, drawX, drawY, text, drawColor, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
-
-			if (wordsFound[i])
-			{
-				//FOUND! CROSS OUT
-				SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
-				SDL_RenderLine(renderer, drawX, drawY + textHeight / 2, drawX + font->getTextWidth(text), drawY + textHeight / 2);
-			}
-
-			drawY += textHeight + 4;
+			drawColor = {255, 255, 255, 255};
 		}
-	}
+		else
+		{
+			drawColor = {255, 0, 0, 255};
+		}
 
+		font->drawTextOutlined(renderer, word.x, word.y, word.word, drawColor, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
+
+		if (word.found)
+		{
+			//FOUND! CROSS OUT
+			SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+			SDL_RenderLine(renderer, word.x, word.y + word.height / 2, word.x + word.width, word.y + word.height / 2);
+		}
+
+		//drawY += word.height + GUI_WORDS_SEP_Y;
+	}	
 }
 
 void ObjWordSearchController::resetGameData()
@@ -189,6 +237,8 @@ void ObjWordSearchController::loadWords(std::string path)
 
 void ObjWordSearchController::startNextLevel()
 {
+	std::vector<std::string> wordStrings;
+
 	level++;
 	difficulty = SDL_min(difficulty + 1, MAX_DIFFICULTY);
 	gridSize = STARTING_GRID_SIZE + (difficulty - 1) * 1;
@@ -199,28 +249,38 @@ void ObjWordSearchController::startNextLevel()
 
 	getWords();
 
-	wordSearchBox->initializeGrid(gridSize, currentWords);
+	for (WordInfo word : currentWords)
+	{
+		wordStrings.push_back(word.word);
+	}
+
+	wordSearchBox->initializeGrid(gridSize, wordStrings);
 	gameClock->pauseTimer();
 	
-	state = WordSearchState::WORD_SEARCH_STATE_WAITING_FOR_BOX;
+	state = WordSearchState::WORD_SEARCH_STATE_STARTING_ROUND;
+	boxReady = false;
 }
 
 void ObjWordSearchController::getWords()
 {
 	int wordCount;
 	Random *random;
+	double wordX, wordY;
 
 	SDL_Log("ObjWordSearchController: Getting words...");
 
 	currentWords.clear();
-	wordsFound.clear();
 
 	random = gameManager->getRandom();
 	wordCount = random->getRandomInt(wordCountMin, wordCountMax);
 
+	wordX = GUI_TEXT_OFFSET + GUI_WORDS_OFFSET_X;
+	wordY = wordsYOffset;
+
 	for (int i = 0; i < wordCount; i++)
 	{
 		int length;
+		int width, height;
 		std::string word;
 
 		length = random->getRandomInt(MIN_WORD_LENGTH, SDL_min(gridSize, MAX_WORD_LENGTH));
@@ -232,10 +292,15 @@ void ObjWordSearchController::getWords()
 			index = random->getRandomInt(0, words[length].size() - 1);
 			word = words[length][index];
 		}
-		while (std::find(currentWords.begin(), currentWords.end(), word) != currentWords.end());
+		while (std::find_if(currentWords.begin(), currentWords.end(), [word](WordInfo &nextWord) {
+			       return nextWord.word == word;
+		       }) != currentWords.end());
 		
-		currentWords.push_back(word);
-		wordsFound.push_back(false);
+		width = font->getTextWidth(word);
+		height = font->getTextHeight(word);
+
+		currentWords.push_back({wordX, wordY, word, width, height, false});
+		wordY += height + GUI_WORDS_SEP_Y;
 	} 
 
 	SDL_Log("ObjWordSearchController: Got words.");
@@ -243,9 +308,7 @@ void ObjWordSearchController::getWords()
 
 void ObjWordSearchController::boxReadyCallback()
 {
-	gameClock->unpauseTimer();
-
-	state = WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME;
+	boxReady = true;
 }
 
 void ObjWordSearchController::gameClockCompletedCallback()
@@ -275,14 +338,14 @@ void ObjWordSearchController::wordsFoundCallback(std::vector<std::string> words)
 	//Set words as found
 	for (int i = 0; i < currentWords.size(); i++)
 	{
-		if (std::find(words.begin(), words.end(), currentWords[i]) != words.end())
+		if (std::find(words.begin(), words.end(), currentWords[i].word) != words.end())
 		{
-			if (wordsFound[i])
+			if (currentWords[i].found)
 			{
-				SDL_Log("ObjWordSearchController: Warning! For some reason a word is being marked as found more than once. Word: %s", currentWords[i].c_str());
+				SDL_Log("ObjWordSearchController: Warning! For some reason a word is being marked as found more than once. Word: %s", currentWords[i].word.c_str());
 			}
 
-			wordsFound[i] = true;
+			currentWords[i].found = true;
 		}
 	}
 
@@ -386,7 +449,7 @@ void ObjWordSearchController::createRose(double x, double y, RoseSize size, int 
 	double goalX, goalY;
 	
 	goalX = GUI_TEXT_OFFSET + font->getTextWidth("SCORE: ") / 2.0;
-	goalY = GUI_TEXT_OFFSET + font->getTextHeight("LEVEL: ") + GUI_WORD_SEP_Y + font->getTextHeight("SCORE: ") / 2.0;
+	goalY = scoreYOffset + font->getTextHeight("SCORE: ") / 2.0;
 
 	rose = gameManager->createObject<ObjRose>("objRose", x, y, goalX, goalY, score);
 	rose->setRoseSize(size);

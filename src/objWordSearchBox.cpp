@@ -80,11 +80,6 @@ void ObjWordSearchBox::update(double deltaTime)
 		case BoxState::BOX_STATE_SHRINKING:
 		{
 			updateBoxSize(deltaTime, MIN_BOX_SIZE);
-
-			if (boxSize == MIN_BOX_SIZE)
-			{
-				state = BoxState::BOX_STATE_EXPANDING;
-			}
 		}
 		break;
 
@@ -100,6 +95,12 @@ void ObjWordSearchBox::update(double deltaTime)
 		break;
 
 		case BoxState::BOX_STATE_READY:
+		{
+			//Waiting for WordSearchController to tell us the game has started
+		}
+		break;
+
+		case BoxState::BOX_STATE_ACTIVE:
 		{
 			//Nothing to do. Waiting for one of 2 things to happen:
 				//All words are found. Tell controller that the player has won the round
@@ -130,35 +131,33 @@ void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 	//Draw box
 	box->render(renderer, pos[0], pos[1]);	
 	
-	drawLetters(renderer);	
-
-	//Draw crossed words
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
-
-	for (Word* word : currentWords)
+	if (state == BoxState::BOX_STATE_ACTIVE)
 	{
-		if (word->found)
+		drawLetters(renderer);	
+
+		//Draw crossed words
+		SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
+
+		for (Word* word : currentWords)
 		{
-			float startX, startY;
-			float endX, endY;
+			if (word->found)
+			{
+				float startX, startY;
+				float endX, endY;
 
-			startX = grid[word->letterLocations[0].first][word->letterLocations[0].second].x;
-			startY = grid[word->letterLocations[0].first][word->letterLocations[0].second].y;
-			endX = grid[word->letterLocations.back().first][word->letterLocations.back().second].x;
-			endY = grid[word->letterLocations.back().first][word->letterLocations.back().second].y;
+				startX = grid[word->letterLocations[0].first][word->letterLocations[0].second].x;
+				startY = grid[word->letterLocations[0].first][word->letterLocations[0].second].y;
+				endX = grid[word->letterLocations.back().first][word->letterLocations.back().second].x;
+				endY = grid[word->letterLocations.back().first][word->letterLocations.back().second].y;
 
-			SDL_RenderLine(renderer, startX, startY, endX, endY);
+				SDL_RenderLine(renderer, startX, startY, endX, endY);
+			}
 		}
 	}
 }
 
 void ObjWordSearchBox::drawLetters(SDL_Renderer *renderer)
 {
-	if (state != BoxState::BOX_STATE_READY)
-	{
-		return;
-	}
-
 	for (int i = 0; i < gridSize; i++)
 	{
 		for (int j = 0; j < gridSize; j++)
@@ -239,6 +238,11 @@ void ObjWordSearchBox::setWrongLetterCallback(std::function<void()> callback)
 	wrongLetterCallback = std::move(callback);
 }
 
+void ObjWordSearchBox::shrinkBox()
+{
+	state = BoxState::BOX_STATE_SHRINKING;
+}
+
 void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 {
 	clearGrid();
@@ -260,8 +264,17 @@ void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 
 	populateWords(words);
 
-	state = BoxState::BOX_STATE_SHRINKING;
-	showWords = false;
+	state = BoxState::BOX_STATE_EXPANDING;
+}
+
+void ObjWordSearchBox::setAsActive()
+{
+	if (state != BoxState::BOX_STATE_READY)
+	{
+		throw std::runtime_error("ObjWordSearchBox: Attempted to set the box in an active state when we are not ready!");
+	}
+
+	state = BoxState::BOX_STATE_ACTIVE;
 }
 
 void ObjWordSearchBox::gameOver()
@@ -545,7 +558,6 @@ void ObjWordSearchBox::boxReady()
 	readyCallback();
 	
 	state = BoxState::BOX_STATE_READY;
-	showWords = true;
 
 	updateLetterPositions();
 }
@@ -607,6 +619,7 @@ void ObjWordSearchBox::updateLetterPositions()
 
 void ObjWordSearchBox::mouseButtonCallback(SDL_Event &e)
 {
+	if (state != BoxState::BOX_STATE_ACTIVE) return;
 	if (e.button.button != SDL_BUTTON_LEFT) return;
 	if (hoveredLetter == NULL) return;
 
@@ -680,7 +693,7 @@ void ObjWordSearchBox::mouseButtonCallback(SDL_Event &e)
 
 void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 {
-	if (state != BoxState::BOX_STATE_READY) return;
+	if (state != BoxState::BOX_STATE_ACTIVE) return;
 
 	SDL_MouseMotionEvent motionEvent;
 	LetterInfo *letterInfo = NULL;

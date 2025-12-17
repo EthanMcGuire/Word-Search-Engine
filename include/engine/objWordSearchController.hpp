@@ -14,10 +14,19 @@ class ObjGameClock;
 enum WordSearchState
 {
 	//WORD_SEARCH_STATE_START_NEXT_LEVEL,	//Tell box to clear grid and shrink. And give new words. And pause the timer. AND create level text instance
-	WORD_SEARCH_STATE_WAITING_FOR_BOX,	//Waiting for the box to shrink, then expand
+	WORD_SEARCH_STATE_STARTING_ROUND,	//Waiting for the box to fully expand. Will also be sending out the list of words at the same time.
 	WORD_SEARCH_STATE_ACTIVE_GAME,		//Timer is active, waiting for the player to find all the words
+	WORD_SEARCH_STATE_ENDING_ROUND,		//Words are going away and giving the player score and time. At the same time, the box will begin to shrink.
 	WORD_SEARCH_STATE_GAME_OVER,
 	WORD_SEARCH_STATE_COUNT
+};
+
+struct WordInfo
+{
+	double x, y;
+	std::string word;
+	int width, height;
+	bool found = false;
 };
 
 class ObjWordSearchController : public RenderableObject
@@ -29,6 +38,8 @@ class ObjWordSearchController : public RenderableObject
 		void renderGui(SDL_Renderer *renderer) override;
 
 	private:
+		void drawWords(SDL_Renderer *renderer);
+
 		void resetGameData();
 
 		void loadWords(std::string path);
@@ -52,9 +63,10 @@ class ObjWordSearchController : public RenderableObject
 		void addScore(int scoreToAdd);
 
 		const int GUI_TEXT_OFFSET = 4;
-		const int GUI_WORD_SEP_Y = 8;
+		const int GUI_TEXT_SEP_Y = 8;
 		const int GUI_WORDS_OFFSET_X = 8;
 		const int GUI_WORDS_OFFSET_Y = 12;
+		const int GUI_WORDS_SEP_Y = 6;
 		const int STARTING_TIME = 60000;
 		const int WRONG_LETTER_TIME_LOSS = 5000;
 		const int CORRECT_WORD_TIME_ADD = 5000;
@@ -69,13 +81,18 @@ class ObjWordSearchController : public RenderableObject
 		const int ROSE_CREATION_RANGE = 32;
 
 		std::unordered_map<unsigned int, std::vector<std::string>> words;	//Maps character count to a list of words containing that many characters
-		std::vector<std::string> currentWords;
 		std::vector<bool> wordsFound;
 		std::vector<std::pair<int, int>> wordLengthScoreMapping;
+		std::vector<WordInfo> currentWords;
+		bool boxReady;
 
 		BitmapFont *font;
 		ObjWordSearchBox *wordSearchBox;
 		ObjGameClock *gameClock;
+
+		int scoreYOffset;
+		int wordsHeaderYOffset;
+		int wordsYOffset;
 
 		WordSearchState state;	
 		int level;

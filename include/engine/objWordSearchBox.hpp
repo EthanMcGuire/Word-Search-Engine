@@ -18,6 +18,7 @@ enum BoxState
 	BOX_STATE_SHRINKING,
 	BOX_STATE_EXPANDING,
 	BOX_STATE_READY,
+	BOX_STATE_ACTIVE,
 	BOX_STATE_GAME_OVER,
 	BOX_STATE_COUNT
 };
@@ -53,7 +54,9 @@ class ObjWordSearchBox : public RenderableObject
 		void setWordsFoundCallback(std::function<void(std::vector<std::string>)> callback);
 		void setWrongLetterCallback(std::function<void()> callback);
 
+		void shrinkBox();
 		void initializeGrid(int size, std::vector<std::string> words);
+		void setAsActive();
 		void gameOver();
 	private:
 		void drawLetters(SDL_Renderer *renderer);
@@ -96,7 +99,6 @@ class ObjWordSearchBox : public RenderableObject
 		LetterInfo *hoveredLetter = NULL;
 		int hoveredLetterGridX, hoveredLetterGridY;
 		LetterInfo** grid = NULL;
-		bool showWords = false;
 
 		std::function<void()> readyCallback = NULL;
 		std::function<void(std::vector<std::string>)> wordsFoundCallback = NULL;
