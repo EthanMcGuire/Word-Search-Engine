@@ -6,6 +6,7 @@
 #include "objGameClock.hpp"
 #include "config.hpp"
 #include "random.hpp"
+#include "utility.hpp"
 #include <stdexcept>
 #include <filesystem>
 #include <fstream>
@@ -23,13 +24,15 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	}
 
 	//Calculate the GUI y offsets
-	scoreYOffset = GUI_TEXT_OFFSET + font->getTextHeight("LEVEL: ") + GUI_TEXT_SEP_Y; 
-	wordsHeaderYOffset = scoreYOffset + font->getTextHeight("SCORE: ") + GUI_TEXT_SEP_Y;
-	wordsYOffset = wordsHeaderYOffset + font->getTextHeight("WORDS") + GUI_WORDS_OFFSET_Y;
+	difYOffset = GUI_TEXT_OFFSET + font->getTextHeight(LEVEL_TEXT) + GUI_TEXT_SEP_Y; 
+	scoreYOffset = difYOffset + font->getTextHeight(DIF_TEXT) + GUI_TEXT_SEP_Y; 
+	wordsHeaderYOffset = scoreYOffset + font->getTextHeight(SCORE_TEXT) + GUI_TEXT_SEP_Y;
+	wordsYOffset = wordsHeaderYOffset + font->getTextHeight(WORDS_TEXT) + GUI_WORDS_OFFSET_Y;
 	
 	//Create objects
 	wordSearchBox = gameManager->createObject<ObjWordSearchBox>("objWordSearchBox", 480, 270);
 	wordSearchBox->setReadyCallback(std::bind(&ObjWordSearchController::boxReadyCallback, this));
+	wordSearchBox->setDoneShrinkingCallback(std::bind(&ObjWordSearchController::boxDoneShrinkingCallback, this));
 	wordSearchBox->setWordsFoundCallback(std::bind(&ObjWordSearchController::wordsFoundCallback, this, std::placeholders::_1));
 	wordSearchBox->setWrongLetterCallback(std::bind(&ObjWordSearchController::wrongLetterCallback, this));
 
@@ -46,24 +49,29 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 
 	//Start the game
 	resetGameData();	
-	startNextLevel();
+	beginNextLevelDelay();
 }
 
 void ObjWordSearchController::update(double deltaTime)
 {
 	switch (state)
 	{
+		case WordSearchState::WORD_SEARCH_STATE_NEXT_LEVEL_DELAY:
+		{
+			nextLevelDelay -= deltaTime * 1000;
+
+			if (nextLevelDelay <= 0)
+			{
+				startNextLevel();
+			}
+		}
+		break;
+
 		case WordSearchState::WORD_SEARCH_STATE_STARTING_ROUND:
 		{
-			bool wordsDone = true;
-
-			//Waiting for a callback
-
-			//Send out words
-			//
-			if (wordsDone && boxReady)
+			if (moveWordsToGoalLocation() && boxReady)
 			{
-				wordSearchBox->setAsActive();
+				wordSearchBox->startRound();
 				gameClock->unpauseTimer();
 
 				state = WordSearchState::WORD_SEARCH_STATE_ACTIVE_GAME;
@@ -87,22 +95,43 @@ void ObjWordSearchController::update(double deltaTime)
 			//Round completed successfully?
 			if (allWordsCompleted)
 			{
-				state = WordSearchState::WORD_SEARCH_STATE_ENDING_ROUND;
-				wordSearchBox->shrinkBox();
-				gameClock->pauseTimer();
+				roundCompleted();
+			}
+		}
+		break;
+
+		case WordSearchState::WORD_SEARCH_STATE_ROUND_COMPLETED_DELAY:
+		{
+			endRoundDelay -= deltaTime * 1000;
+
+			if (endRoundDelay <= 0)
+			{
+				endRound();
 			}
 		}
 		break;
 
 		case WordSearchState::WORD_SEARCH_STATE_ENDING_ROUND:
 		{
-			bool wordsDone = false;
+			//Collapse words
+			moveWordsToGoalLocation();
 
-			//Collapse all words, adding score and time for each one
-			//
-			if (wordsDone)
+			//Delete words that have reached the SCORE text 
+			for (int i = currentWords.size() - 1; i >= 0; i--)
 			{
-				startNextLevel();
+				if (SDL_abs(currentWords[i].y - currentWords[i].goalY) <= SDL_FLT_EPSILON)
+				{
+					//Add score
+					createRoses(currentWords[i].x + currentWords[i].width / 2.0, currentWords[i].y + currentWords[i].height / 2.0, WORD_COMPLETED_SCORE_ADD);
+					
+					//Remove word
+					currentWords.erase(currentWords.begin() + 1);
+				}	
+			}
+
+			if (currentWords.size() == 0 && boxShrunk)
+			{
+				beginNextLevelDelay();
 			}
 		}
 		break;
@@ -126,17 +155,22 @@ void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 	drawX = GUI_TEXT_OFFSET;
 	drawY = GUI_TEXT_OFFSET;
 
-	text = std::string("LEVEL: ") + std::to_string(level);
+	text = std::string(LEVEL_TEXT) + std::to_string(level);
 	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
 	
+	drawY = difYOffset;
+
+	text = std::string(DIF_TEXT) + std::to_string(difficulty);
+	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
+
 	drawY = scoreYOffset;
 
-	text = std::string("SCORE: ") + std::to_string(score);
+	text = std::string(SCORE_TEXT) + std::to_string(score);
 	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
 
 	drawY = wordsHeaderYOffset;
 
-	text = "WORDS";
+	text = WORDS_TEXT;
 	font->drawTextOutlined(renderer, drawX, drawY, text, {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	SDL_RenderLine(renderer, drawX, drawY + 2 + font->getTextHeight(text), drawX + font->getTextWidth(text), drawY + 2 + font->getTextHeight(text));
@@ -170,16 +204,7 @@ void ObjWordSearchController::drawWords(SDL_Renderer *renderer)
 			SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
 			SDL_RenderLine(renderer, word.x, word.y + word.height / 2, word.x + word.width, word.y + word.height / 2);
 		}
-
-		//drawY += word.height + GUI_WORDS_SEP_Y;
 	}	
-}
-
-void ObjWordSearchController::resetGameData()
-{
-	level = 0;
-	score = 0;
-	difficulty = 0;
 }
 
 void ObjWordSearchController::loadWords(std::string path)
@@ -235,12 +260,31 @@ void ObjWordSearchController::loadWords(std::string path)
 	}
 }
 
+void ObjWordSearchController::resetGameData()
+{
+	level = 0;
+	score = 0;
+	difficulty = 1;
+}
+
+void ObjWordSearchController::beginNextLevelDelay()
+{
+	state = WordSearchState::WORD_SEARCH_STATE_NEXT_LEVEL_DELAY;
+	nextLevelDelay = NEXT_LEVEL_DELAY;
+}
+
+/// @brief Starts the next level. Increases difficulty, preps the WordSearchBox, pauses the game clock, and enters us into the STARTING_ROUND state.
 void ObjWordSearchController::startNextLevel()
 {
 	std::vector<std::string> wordStrings;
 
 	level++;
-	difficulty = SDL_min(difficulty + 1, MAX_DIFFICULTY);
+
+	if (level % DIFFICULTY_INCREASE_ROUND == 0)
+	{
+		difficulty = SDL_min(difficulty + 1, MAX_DIFFICULTY);
+	}
+
 	gridSize = STARTING_GRID_SIZE + (difficulty - 1) * 1;
 	wordCountMin = STARTING_MIN_WORD_COUNT + (difficulty / 4);
 	wordCountMax = STARTING_MAX_WORD_COUNT + (difficulty / 4);
@@ -255,17 +299,17 @@ void ObjWordSearchController::startNextLevel()
 	}
 
 	wordSearchBox->initializeGrid(gridSize, wordStrings);
+	boxReady = false;
 	gameClock->pauseTimer();
 	
 	state = WordSearchState::WORD_SEARCH_STATE_STARTING_ROUND;
-	boxReady = false;
 }
 
 void ObjWordSearchController::getWords()
 {
 	int wordCount;
 	Random *random;
-	double wordX, wordY;
+	double wordX, wordY, goalY;
 
 	SDL_Log("ObjWordSearchController: Getting words...");
 
@@ -275,7 +319,8 @@ void ObjWordSearchController::getWords()
 	wordCount = random->getRandomInt(wordCountMin, wordCountMax);
 
 	wordX = GUI_TEXT_OFFSET + GUI_WORDS_OFFSET_X;
-	wordY = wordsYOffset;
+	wordY = wordsHeaderYOffset;
+	goalY = wordsYOffset;
 
 	for (int i = 0; i < wordCount; i++)
 	{
@@ -299,16 +344,68 @@ void ObjWordSearchController::getWords()
 		width = font->getTextWidth(word);
 		height = font->getTextHeight(word);
 
-		currentWords.push_back({wordX, wordY, word, width, height, false});
-		wordY += height + GUI_WORDS_SEP_Y;
+		currentWords.push_back({wordX, wordY, goalY, word, width, height, false});
+		goalY += height + GUI_WORDS_SEP_Y;
 	} 
 
 	SDL_Log("ObjWordSearchController: Got words.");
 }
 
+void ObjWordSearchController::roundCompleted()
+{
+	wordSearchBox->completeRound();
+	gameClock->pauseTimer();
+	
+	endRoundDelay = END_ROUND_DELAY;
+	state = WordSearchState::WORD_SEARCH_STATE_ROUND_COMPLETED_DELAY;
+}
+
+void ObjWordSearchController::endRound()
+{
+	wordSearchBox->shrinkBox();
+	boxShrunk = false;
+
+	gameClock->addTime(ROUND_COMPLETED_TIME_ADD);
+	
+	//Set the words to go to the SCORE text
+	for (int i = 0; i < currentWords.size(); i++)
+	{
+		currentWords[i].goalY = scoreYOffset;
+	}
+
+	state = WordSearchState::WORD_SEARCH_STATE_ENDING_ROUND;
+}
+
+bool ObjWordSearchController::moveWordsToGoalLocation()
+{
+	bool allWordsReachedGoal = true;
+
+	//Slide the words to their correct positions
+	for (int i = 0; i < currentWords.size(); i++)
+	{
+		currentWords[i].y = Utility::lerp(currentWords[i].y, currentWords[i].goalY, WORD_MOVE_LERP_RATE);
+
+		if (SDL_abs(currentWords[i].y - currentWords[i].goalY) > WORD_MOVE_MIN_Y_DISTANCE)
+		{
+			allWordsReachedGoal = false;
+		}
+		else
+		{
+			currentWords[i].y = currentWords[i].goalY;
+		}
+	}
+
+	return allWordsReachedGoal;
+}
+
 void ObjWordSearchController::boxReadyCallback()
 {
 	boxReady = true;
+}
+
+void ObjWordSearchController::boxDoneShrinkingCallback()
+{
+	boxShrunk = true;
 }
 
 void ObjWordSearchController::gameClockCompletedCallback()
@@ -320,7 +417,7 @@ void ObjWordSearchController::gameClockCompletedCallback()
 	wordSearchBox->gameOver();
 	
 	//Won't do this normally!!!
-	gameManager->setRoomToLoad("titlescreen");
+	//gameManager->setRoomToLoad("titlescreen");
 }
 
 /// @brief Called by the WordSearchBox when the wrong letter is selected.
@@ -367,7 +464,6 @@ void ObjWordSearchController::wordsFoundCallback(std::vector<std::string> words)
 		scoreToAdd += wordScore;
 	}
 
-	multiplier += (difficulty - 1) * DIFFICULTY_MULTIPLIER;
 	multiplier += (words.size() - 1) * WORD_BONUS_MULTIPLIER;
 
 	SDL_Log("ObjWordSearchController: Adding score. Score: %d, Multiplier: %f", scoreToAdd, multiplier);
@@ -384,7 +480,7 @@ void ObjWordSearchController::wordsFoundCallback(std::vector<std::string> words)
 	mouseX = (mouseX / windowWidth) * Config::SCREEN_WIDTH;
 	mouseY = (mouseY / windowHeight) * Config::SCREEN_HEIGHT;
 
-	createRoses(mouseX, mouseY, (int) scoreToAdd * multiplier);
+	createRoses(mouseX, mouseY, scoreToAdd * multiplier);
 
 	//Add clock time, based on the number of words
 	gameClock->addTime(CORRECT_WORD_TIME_ADD * words.size());
@@ -403,43 +499,46 @@ int ObjWordSearchController::getWordLengthScore(int length)
 	return wordLengthScoreMapping.back().second;
 }
 
-void ObjWordSearchController::createRoses(double x, double y, int scoreToAdd)
+void ObjWordSearchController::createRoses(double x, double y, float scoreToAdd)
 {
 	Random *random;
+	float multiplier = 1;
+	int remainingScoreToAdd;
 
 	random = gameManager->getRandom();
 
-	//TODO
-	//Make a more vibrant effect based on the amount of score being added 
-	
-	while (scoreToAdd > 0)
+	//Apply difficulty bonus
+	multiplier += (difficulty - 1) * DIFFICULTY_MULTIPLIER;
+	remainingScoreToAdd = (int) scoreToAdd * multiplier; 
+
+	while (remainingScoreToAdd > 0)
 	{
 		RoseSize size;
-		int score;
+		int nextScore;
 		double roseX, roseY;
 
-		if (scoreToAdd >= 50)
+		if (remainingScoreToAdd >= LARGE_ROSE_SCORE)
 		{
-			score = 50;
+			nextScore = LARGE_ROSE_SCORE;
 			size = RoseSize::ROSE_SIZE_LARGE;
 		}
-		else if (scoreToAdd >= 5)
+		else if (remainingScoreToAdd >= MEDIUM_ROSE_SCORE)
 		{
-			score = 5;
+			nextScore = MEDIUM_ROSE_SCORE;
 			size = RoseSize::ROSE_SIZE_MEDIUM;
 		}
 		else
 		{
-			score = 1;
+			nextScore = SMALL_ROSE_SCORE;
 			size = RoseSize::ROSE_SIZE_SMALL;
 		}
 
-		scoreToAdd -= score;
+		remainingScoreToAdd -= nextScore;
 
 		roseX = x + random->getRandomInt(-ROSE_CREATION_RANGE, ROSE_CREATION_RANGE);
 		roseY = y + random->getRandomInt(-ROSE_CREATION_RANGE, ROSE_CREATION_RANGE);
 
-		createRose(roseX, roseY, size, score);
+		createRose(roseX, roseY, size, nextScore);
 	}
 }
 
@@ -448,8 +547,8 @@ void ObjWordSearchController::createRose(double x, double y, RoseSize size, int 
 	ObjRose *rose;
 	double goalX, goalY;
 	
-	goalX = GUI_TEXT_OFFSET + font->getTextWidth("SCORE: ") / 2.0;
-	goalY = scoreYOffset + font->getTextHeight("SCORE: ") / 2.0;
+	goalX = GUI_TEXT_OFFSET + font->getTextWidth(SCORE_TEXT) / 2.0;
+	goalY = scoreYOffset + font->getTextHeight(SCORE_TEXT) / 2.0;
 
 	rose = gameManager->createObject<ObjRose>("objRose", x, y, goalX, goalY, score);
 	rose->setRoseSize(size);

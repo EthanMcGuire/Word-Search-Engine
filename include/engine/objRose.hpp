@@ -28,7 +28,7 @@ class ObjRose : public RenderableObject
 		void setAddScoreCallback(std::function<void(int)> callback);
 
 	private:
-		const int ROSE_SPEED = 352;
+		const int ROSE_SPEED = 416;
 		static const constexpr double VELOCITY_LERP_RATE = 0.05;
 		static const constexpr double GOAL_LOCATION_RANGE = 16;	//Distance to goal location needed before being collected
 

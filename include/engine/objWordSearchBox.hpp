@@ -51,12 +51,14 @@ class ObjWordSearchBox : public RenderableObject
 		void renderGui(SDL_Renderer *renderer) override;
 
 		void setReadyCallback(std::function<void()> callback);
+		void setDoneShrinkingCallback(std::function<void()> callback);
 		void setWordsFoundCallback(std::function<void(std::vector<std::string>)> callback);
 		void setWrongLetterCallback(std::function<void()> callback);
 
-		void shrinkBox();
 		void initializeGrid(int size, std::vector<std::string> words);
-		void setAsActive();
+		void startRound();
+		void completeRound();
+		void shrinkBox();
 		void gameOver();
 	private:
 		void drawLetters(SDL_Renderer *renderer);
@@ -83,17 +85,20 @@ class ObjWordSearchBox : public RenderableObject
 		const int DELTA_BOX_SIZE = 256;
 		const int BOX_SIZE_BASE = 24;		
 		const int BOX_LETTER_MARGIN = 18;
+		const int BOX_SHRINK_DELAY = 500;	//Shrink delay after a round is completed (milliseconds)
 
 		BitmapFont *font;
 		NineSlice *box;
 		DrawingSurface *letterSurface;
 
 		BoxState state;
+		bool roundCompleted = false;
 		int boxSize;
 		int boxSizeGoal;
 		int boxSizeBase;	//Base size in pixels of the box based. Gets multiplied by the number of characters (width/heigth)
 		int boxLetterMargin;	//Inner box masrgin for letters
 		int gridSize;
+		int shrinkDelay;
 
 		std::vector<Word*> currentWords;
 		LetterInfo *hoveredLetter = NULL;
@@ -101,6 +106,7 @@ class ObjWordSearchBox : public RenderableObject
 		LetterInfo** grid = NULL;
 
 		std::function<void()> readyCallback = NULL;
+		std::function<void()> doneShrinkingCallback = NULL;
 		std::function<void(std::vector<std::string>)> wordsFoundCallback = NULL;
 		std::function<void()> wrongLetterCallback = NULL;
 

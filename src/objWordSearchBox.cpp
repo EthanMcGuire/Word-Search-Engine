@@ -79,7 +79,22 @@ void ObjWordSearchBox::update(double deltaTime)
 
 		case BoxState::BOX_STATE_SHRINKING:
 		{
+			if (boxSize == MIN_BOX_SIZE)
+			{
+				break;
+			}
+
 			updateBoxSize(deltaTime, MIN_BOX_SIZE);
+
+			if (boxSize == MIN_BOX_SIZE)
+			{
+				if (doneShrinkingCallback == NULL)
+				{
+					throw std::runtime_error("ObjWordSearchBox: doneShrinkingCallback was not set.");
+				}
+
+				doneShrinkingCallback();
+			}
 		}
 		break;
 
@@ -105,7 +120,6 @@ void ObjWordSearchBox::update(double deltaTime)
 			//Nothing to do. Waiting for one of 2 things to happen:
 				//All words are found. Tell controller that the player has won the round
 				//Time ran out. Controller will tell the box to stop allowing words to be selected
-
 		}
 		break;
 
@@ -228,6 +242,11 @@ void ObjWordSearchBox::setReadyCallback(std::function<void()> callback)
 	readyCallback = std::move(callback);
 }
 
+void ObjWordSearchBox::setDoneShrinkingCallback(std::function<void()> callback)
+{
+	doneShrinkingCallback = std::move(callback);
+}
+
 void ObjWordSearchBox::setWordsFoundCallback(std::function<void(std::vector<std::string>)> callback)
 {
 	wordsFoundCallback = std::move(callback);
@@ -236,11 +255,6 @@ void ObjWordSearchBox::setWordsFoundCallback(std::function<void(std::vector<std:
 void ObjWordSearchBox::setWrongLetterCallback(std::function<void()> callback)
 {
 	wrongLetterCallback = std::move(callback);
-}
-
-void ObjWordSearchBox::shrinkBox()
-{
-	state = BoxState::BOX_STATE_SHRINKING;
 }
 
 void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
@@ -267,14 +281,25 @@ void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
 	state = BoxState::BOX_STATE_EXPANDING;
 }
 
-void ObjWordSearchBox::setAsActive()
+void ObjWordSearchBox::startRound()
 {
 	if (state != BoxState::BOX_STATE_READY)
 	{
-		throw std::runtime_error("ObjWordSearchBox: Attempted to set the box in an active state when we are not ready!");
+		throw std::runtime_error("ObjWordSearchBox: Attempted to start the round and set the box in an active state when we are not ready!");
 	}
 
+	roundCompleted = false;
 	state = BoxState::BOX_STATE_ACTIVE;
+}
+
+void ObjWordSearchBox::completeRound()
+{
+	roundCompleted = true;
+}
+
+void ObjWordSearchBox::shrinkBox()
+{
+	state = BoxState::BOX_STATE_SHRINKING;
 }
 
 void ObjWordSearchBox::gameOver()
@@ -619,7 +644,7 @@ void ObjWordSearchBox::updateLetterPositions()
 
 void ObjWordSearchBox::mouseButtonCallback(SDL_Event &e)
 {
-	if (state != BoxState::BOX_STATE_ACTIVE) return;
+	if (state != BoxState::BOX_STATE_ACTIVE || roundCompleted) return;
 	if (e.button.button != SDL_BUTTON_LEFT) return;
 	if (hoveredLetter == NULL) return;
 
@@ -693,7 +718,7 @@ void ObjWordSearchBox::mouseButtonCallback(SDL_Event &e)
 
 void ObjWordSearchBox::mouseMoveCallback(SDL_Event &e)
 {
-	if (state != BoxState::BOX_STATE_ACTIVE) return;
+	if (state != BoxState::BOX_STATE_ACTIVE || roundCompleted) return;
 
 	SDL_MouseMotionEvent motionEvent;
 	LetterInfo *letterInfo = NULL;

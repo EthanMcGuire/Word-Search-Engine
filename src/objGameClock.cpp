@@ -29,10 +29,10 @@ ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : Rende
 /// @param deltaTime Time change in seconds since last frame.
 void ObjGameClock::update(double deltaTime)
 {
+    timer.update(deltaTime);
+
     if (timer.timerIsActive())
     {
-        timer.update(deltaTime);
-
 	timeUntilSecond -= deltaTime;
 
 	if (timeUntilSecond <= 0.0)
@@ -40,29 +40,29 @@ void ObjGameClock::update(double deltaTime)
 		timeUntilSecond += 1.0;
 		clockHandAngle += CLOCK_HAND_ANGLE_CHANGE;
 	}
-
-	if (currentTimeChange != 0.0)
-	{
-		double deltaChange;
-		double change;
-
-		change = SDL_min(SDL_abs(currentTimeChange), deltaTime * DELTA_CURRENT_TIME_CHANGE);
-		
-		if (currentTimeChange > 0.0)
-		{
-			currentTimeChange -= change;
-			clockHandAngle -= change / 1000.0 * CLOCK_HAND_ANGLE_CHANGE; 
-		}
-		else
-		{
-			currentTimeChange += change;
-			clockHandAngle += change / 1000.0 * CLOCK_HAND_ANGLE_CHANGE; 
-		}
-
-		//SDL_Log("Current time change: %f", currentTimeChange);
-	}
     }
 
+    if (currentTimeChange != 0.0)
+    {
+	double deltaChange;
+	double change;
+
+	change = SDL_min(SDL_abs(currentTimeChange), deltaTime * DELTA_CURRENT_TIME_CHANGE);
+		
+	if (currentTimeChange > 0.0)
+	{
+		currentTimeChange -= change;
+		clockHandAngle -= change / 1000.0 * CLOCK_HAND_ANGLE_CHANGE; 
+	}
+	else
+	{
+		currentTimeChange += change;
+		clockHandAngle += change / 1000.0 * CLOCK_HAND_ANGLE_CHANGE; 
+	}
+
+	//SDL_Log("Current time change: %f", currentTimeChange);
+    }
+	
     //Update time changes
     for (int i = timeChanges.size() - 1; i >= 0; i--)
     {

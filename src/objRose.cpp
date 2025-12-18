@@ -6,6 +6,8 @@
 
 ObjRose::ObjRose(GameManager *gameManager, double x, double y, double goalX, double goalY, int score) : RenderableObject("ObjRose", gameManager, x, y)
 {
+	setDrawDepth(-9999);
+
 	goal = gmtl::Vec2d(goalX, goalY);
 	moveVector = gmtl::Vec2d(0.0, 0.0);
 	this->score = score;
