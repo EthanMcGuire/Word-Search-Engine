@@ -54,6 +54,17 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 
 void ObjWordSearchController::update(double deltaTime)
 {
+	//Update score
+	if (scoreAdd > 0)
+	{
+		int change;
+
+		change = SDL_min(scoreAdd, (int) SCORE_DELTA_ADD * deltaTime);
+
+		scoreAdd -= change;
+		score += change;
+	}
+
 	switch (state)
 	{
 		case WordSearchState::WORD_SEARCH_STATE_NEXT_LEVEL_DELAY:
@@ -69,7 +80,7 @@ void ObjWordSearchController::update(double deltaTime)
 
 		case WordSearchState::WORD_SEARCH_STATE_STARTING_ROUND:
 		{
-			if (moveWordsToGoalLocation() && boxReady)
+			if (moveWordsToGoal() && boxReady)
 			{
 				wordSearchBox->startRound();
 				gameClock->unpauseTimer();
@@ -114,7 +125,7 @@ void ObjWordSearchController::update(double deltaTime)
 		case WordSearchState::WORD_SEARCH_STATE_ENDING_ROUND:
 		{
 			//Collapse words
-			moveWordsToGoalLocation();
+			moveWordsToGoal();
 
 			//Delete words that have reached the SCORE text 
 			for (int i = currentWords.size() - 1; i >= 0; i--)
@@ -186,17 +197,20 @@ void ObjWordSearchController::drawWords(SDL_Renderer *renderer)
 	for (WordInfo word : currentWords)
 	{
 		SDL_Color drawColor;
+		Uint8 drawAlpha;
+
+		drawAlpha = word.alpha * 255.f;
 		
 		if (!word.found)
 		{
-			drawColor = {255, 255, 255, 255};
+			drawColor = {255, 255, 255, drawAlpha};
 		}
 		else
 		{
-			drawColor = {255, 0, 0, 255};
+			drawColor = {255, 0, 0, drawAlpha};
 		}
 
-		font->drawTextOutlined(renderer, word.x, word.y, word.word, drawColor, {0, 0, 0, 255}, TextAlign::LEFT, TextAlign::TOP);
+		font->drawTextOutlined(renderer, word.x, word.y, word.word, drawColor, {0, 0, 0, drawAlpha}, TextAlign::LEFT, TextAlign::TOP);
 
 		if (word.found)
 		{
@@ -264,6 +278,7 @@ void ObjWordSearchController::resetGameData()
 {
 	level = 0;
 	score = 0;
+	scoreAdd = 0;
 	difficulty = 1;
 }
 
@@ -344,7 +359,7 @@ void ObjWordSearchController::getWords()
 		width = font->getTextWidth(word);
 		height = font->getTextHeight(word);
 
-		currentWords.push_back({wordX, wordY, goalY, word, width, height, false});
+		currentWords.push_back({wordX, wordY, goalY, 0.f, 1.f, word, width, height, false});
 		goalY += height + GUI_WORDS_SEP_Y;
 	} 
 
@@ -367,16 +382,17 @@ void ObjWordSearchController::endRound()
 
 	gameClock->addTime(ROUND_COMPLETED_TIME_ADD);
 	
-	//Set the words to go to the SCORE text
+	//Set the words to go to the SCORE text and fade away
 	for (int i = 0; i < currentWords.size(); i++)
 	{
 		currentWords[i].goalY = scoreYOffset;
+		currentWords[i].goalAlpha = 0.f;
 	}
 
 	state = WordSearchState::WORD_SEARCH_STATE_ENDING_ROUND;
 }
 
-bool ObjWordSearchController::moveWordsToGoalLocation()
+bool ObjWordSearchController::moveWordsToGoal()
 {
 	bool allWordsReachedGoal = true;
 
@@ -384,6 +400,7 @@ bool ObjWordSearchController::moveWordsToGoalLocation()
 	for (int i = 0; i < currentWords.size(); i++)
 	{
 		currentWords[i].y = Utility::lerp(currentWords[i].y, currentWords[i].goalY, WORD_MOVE_LERP_RATE);
+		currentWords[i].alpha = Utility::lerp(currentWords[i].alpha, currentWords[i].goalAlpha, WORD_ALPHA_LERP_RATE);
 
 		if (SDL_abs(currentWords[i].y - currentWords[i].goalY) > WORD_MOVE_MIN_Y_DISTANCE)
 		{
@@ -392,6 +409,7 @@ bool ObjWordSearchController::moveWordsToGoalLocation()
 		else
 		{
 			currentWords[i].y = currentWords[i].goalY;
+			currentWords[i].alpha = currentWords[i].goalAlpha;
 		}
 	}
 
@@ -557,8 +575,5 @@ void ObjWordSearchController::createRose(double x, double y, RoseSize size, int 
 
 void ObjWordSearchController::addScore(int scoreToAdd)
 {
-	//TODO
-	//Add score over time instead
-	
-	score += scoreToAdd;
+	scoreAdd += scoreToAdd;
 }

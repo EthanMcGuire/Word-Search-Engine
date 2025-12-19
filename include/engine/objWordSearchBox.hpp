@@ -81,7 +81,7 @@ class ObjWordSearchBox : public RenderableObject
 
 		std::vector<Word*> getWordsAtGridLocation(int gridX, int gridY);
 
-		const int MIN_BOX_SIZE = 32;
+		const int MIN_BOX_SIZE = 8;
 		const int DELTA_BOX_SIZE = 256;
 		const int BOX_SIZE_BASE = 24;		
 		const int BOX_LETTER_MARGIN = 18;

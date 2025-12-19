@@ -27,6 +27,8 @@ struct WordInfo
 {
 	double x, y;
 	double goalY;
+	float alpha;
+	float goalAlpha;
 	std::string word;
 	int width, height;
 	bool found = false;
@@ -54,9 +56,9 @@ class ObjWordSearchController : public RenderableObject
 		void roundCompleted();
 		void endRound();
 
-		/// @brief Moves the words to their current goal Y location.
+		/// @brief Moves the words to their goal Y locations and adjusts their alphas to their goal alphas.
 		/// @return True if all of the words have reached their goal locations.
-		bool moveWordsToGoalLocation();
+		bool moveWordsToGoal();
 
 		void boxReadyCallback();
 		void boxDoneShrinkingCallback();
@@ -86,6 +88,7 @@ class ObjWordSearchController : public RenderableObject
 		const int GUI_WORDS_SEP_Y = 6;
 
 		const float WORD_MOVE_LERP_RATE = 0.2;
+		const float WORD_ALPHA_LERP_RATE = 0.2;
 		const int WORD_MOVE_MIN_Y_DISTANCE = 1;
 
 		const std::string LEVEL_TEXT = "LEVEL: ";
@@ -117,6 +120,7 @@ class ObjWordSearchController : public RenderableObject
 		const int MEDIUM_ROSE_SCORE = 5;
 		const int SMALL_ROSE_SCORE = 1;
 		const int WORD_COMPLETED_SCORE_ADD = 100;
+		const int SCORE_DELTA_ADD = 500;	//Score to add per second
 
 		std::unordered_map<unsigned int, std::vector<std::string>> words;	//Maps character count to a list of words containing that many characters
 		std::vector<bool> wordsFound;
@@ -139,7 +143,7 @@ class ObjWordSearchController : public RenderableObject
 
 		WordSearchState state;	
 		int level;
-		int score;
+		int score, scoreAdd;
 		int difficulty;
 		int gridSize;
 		int wordCountMin;

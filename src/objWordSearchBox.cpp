@@ -133,19 +133,22 @@ void ObjWordSearchBox::update(double deltaTime)
 
 void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 {
-	//Draw black alpha background
-	SDL_FRect rect;
-
-	rect = {(float) pos[0], (float) pos[1], (float) boxSize, (float) boxSize};
-
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 96);
-	SDL_RenderFillRect(renderer, &rect);
-	
 	//Draw box
-	box->render(renderer, pos[0], pos[1]);	
+	if (boxSize > MIN_BOX_SIZE)
+	{
+		//Draw black alpha background
+		SDL_FRect rect;
+
+		rect = {(float) pos[0], (float) pos[1], (float) boxSize, (float) boxSize};
+
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 96);
+		SDL_RenderFillRect(renderer, &rect);
+
+		box->render(renderer, pos[0], pos[1]);	
+	}
 	
-	if (state == BoxState::BOX_STATE_ACTIVE)
+	if (state == BoxState::BOX_STATE_ACTIVE || state == BoxState::BOX_STATE_GAME_OVER)
 	{
 		drawLetters(renderer);	
 
@@ -184,7 +187,7 @@ void ObjWordSearchBox::drawLetters(SDL_Renderer *renderer)
 void ObjWordSearchBox::drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo)
 {
 	SDL_Color drawColor, outlineColor;
-	unsigned int letterWidth, letterHeight;
+	unsigned int surfWidth, surfHeight;
 	double letterScale = 1;
 
 	outlineColor = {0, 0, 0, 255};
@@ -219,10 +222,10 @@ void ObjWordSearchBox::drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo)
 
 	}
 
-	letterWidth = letterInfo.width;
-	letterHeight = letterInfo.height;
+	surfWidth = letterInfo.width + 8;
+	surfHeight = letterInfo.height + 8;
 
-	letterSurface->createSurface(renderer, letterWidth, letterHeight);
+	letterSurface->createSurface(renderer, surfWidth, surfHeight);
 	letterSurface->setBlendMode(SDL_BLENDMODE_BLEND);
 	letterSurface->setScaleMode(SDL_SCALEMODE_NEAREST);
 	letterSurface->targetSurface(renderer);
@@ -230,11 +233,11 @@ void ObjWordSearchBox::drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo)
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderClear(renderer);
 
-	font->drawTextOutlined(renderer, letterWidth / 2, letterHeight / 2, std::string(1, letterInfo.letter), drawColor, outlineColor, TextAlign::CENTER, TextAlign::CENTER);
+	font->drawTextOutlined(renderer, surfWidth / 2, surfHeight / 2, std::string(1, letterInfo.letter), drawColor, outlineColor, TextAlign::CENTER, TextAlign::CENTER);
 
 	SDL_SetRenderTarget(renderer, NULL);
 
-	letterSurface->drawSurface(renderer, letterInfo.x - (letterWidth * letterScale / 2), letterInfo.y - (letterHeight * letterScale / 2), letterScale, letterScale);
+	letterSurface->drawSurface(renderer, letterInfo.x - (surfWidth * letterScale / 2), letterInfo.y - (surfHeight * letterScale / 2), letterScale, letterScale);
 }
 
 void ObjWordSearchBox::setReadyCallback(std::function<void()> callback)
