@@ -12,6 +12,28 @@
             "filePath": "assets/texture/starset.png",
             "assetType": "texture"  
         },
+	{
+            "filePath": "assets/texture/clock/clock2_B.png",
+            "assetType": "texture"  
+        },
+	{
+            "filePath": "assets/texture/rose/rose.png",
+            "assetType": "texture"  
+        },
+	{
+            "filePath": "assets/texture/rose/rose_small.png",
+            "assetType": "texture"  
+        },
+	{
+            "filePath": "assets/texture/rose/rose_medium.png",
+            "assetType": "texture"  
+        },
+	{
+            "filePath": "assets/texture/wordSearchBox.png",
+            "assetType": "atlas",
+ 	    "spriteWidth": 8,
+	    "spriteHeight": 8  
+        },
         {
             "filePath": "assets/font/openSans/fntOpenSans.fnt",
             "assetType": "bitmap"   

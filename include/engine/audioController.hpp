@@ -59,6 +59,9 @@ class AudioController
 
         #pragma region SoundLoading
 
+        /// @brief Frees all of the sound assets.
+        void clearSoundAssets();
+
         /// @brief Loads a music sound asset.
         /// @param fname The file path of the sound wav file to load.
         /// @param soundName The name to give to the sound.
@@ -86,9 +89,6 @@ class AudioController
 
         #pragma region SoundLoading
 
-        /// @brief Frees all of the sound assets.
-        void clearSoundAssets();
-
         /// @brief Initializes a Sound. Creates the audio stream and loads the .wav file.
         /// @param fname The .wav file path, relative to the base SDL path.
         /// @param sound The Sound instance to populate.
@@ -100,11 +100,6 @@ class AudioController
         void freeSound(Sound *sound);
 
         #pragma endregion SoundLoading 
-
-        /*
-        const char* MUSIC_PATH[MUSIC_COUNT] = {"assets\\audio\\music\\calm_track.wav", "assets\\audio\\music\\crickets.wav"};
-        const char* SOUND_PATH[SOUND_COUNT] = {"assets\\audio\\music\\calm_track.wav", "assets\\audio\\music\\crickets.wav"};
-        */
 
         SDL_AudioDeviceID audio_device;
         std::unordered_map<std::string, Sound*> musics;

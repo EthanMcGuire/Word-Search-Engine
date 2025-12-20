@@ -16,8 +16,8 @@ class AssetManager;
 class Engine
 {
     public:
-        Engine();
-        ~Engine();
+        Engine() {}; 
+        ~Engine() {};
 
         /// @brief Initializes the engine. Initializing SDL, the window and render, subsystems, and other required classes.
         /// @return bool True on success, false on failure.
@@ -54,6 +54,7 @@ class Engine
 
         AudioController* getAudioController() const;
         EventDispatcher* getEventDispatcher() const;
+	SDL_Window *getWindow() const;
         AssetManager* getAssetManager() const;
         Random* getRandomNumberGenerator() const;
         float getFPS() const;
@@ -79,12 +80,6 @@ class Engine
         EventDispatcher *eventDispatcher = NULL;
         AssetManager *assetManager = NULL;
         Random *rng = NULL;
-
-        //Used to remove listeners from the EventDispatcher
-        std::queue<uint32_t> eventListenerIds;
-        std::queue<uint32_t> sdlEventListenerIds;
 };
-
-#include "engine.tpp"
 
 #endif

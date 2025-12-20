@@ -27,7 +27,7 @@ void Timer::stop()
     paused = false;
 
     startTicks = 0;
-    paused = 0;
+    pausedTicks = 0;
 }
 
 /// @brief Pauses the timer.

@@ -10,7 +10,8 @@ namespace Config
 {
     static const char* GAME_TITLE = "Test Game";
     static const char* GAME_VERSION = "1.0";
-    static const char* STARTING_ROOM = "default";
+    //static const char* STARTING_ROOM = "default";
+    static const char* STARTING_ROOM = "titlescreen";
 
     static const int SCREEN_WIDTH = 960;
     static const int SCREEN_HEIGHT = 540;
@@ -21,10 +22,12 @@ namespace Config
 #ifdef __linux__
     static const std::string ROOM_PATH = "assets/rooms"; 
     static const std::string ASSET_PATH = "assets/data/assets.json"; 
+    static const std::string WORDS_PATH = "assets/data/words_alpha.txt"; 
     //static const std::string ANIMATION_PATH = "resources/data/animations.json";
 #else
     static const std::string ROOM_PATH = "assets\\rooms"; 
     static const std::string ASSET_PATH = "assets\\data\\assets.json"; 
+    static const std::string WORDS_PATH = "assets\\data\\words_alpha.txt"; 
     //static const std::string ANIMATION_PATH = "resources\\data\\animations.json";
 #endif
 

@@ -24,6 +24,12 @@
         "tileBackground": true,
 
         "objects": [
+		{
+			"objectName": "objWordSearchController",
+			"x": 896,
+			"y": 32,
+			"parameters": []
+		}
         ]
     }
 }

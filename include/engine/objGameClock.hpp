@@ -3,8 +3,18 @@
 
 #include "renderableObject.hpp"
 #include "countdownTimer.hpp"
+#include <vector>
 
 class GameManager;
+class BitmapFont;
+class Texture;
+
+struct TimeChange
+{
+	double offsetY;
+	int time;
+	int delay;
+};
 
 class ObjGameClock : public RenderableObject
 {
@@ -19,8 +29,9 @@ class ObjGameClock : public RenderableObject
         /// @param renderer The renderer to draw to.
         void renderGui(SDL_Renderer *renderer) override;
 
-        /// @brief Called when the countdown timer finishes. Initiates the game over sequence.
-        void timerCompleted();
+	/// @brief Sets the callback function to call once the clock reaches 0.
+	/// @param callback The callback function.
+	void setCallbackFunction(std::function<void()> callback);
 
         #pragma region Timer
 
@@ -45,10 +56,30 @@ class ObjGameClock : public RenderableObject
         /// @param addTime Time to remove in milliseconds.
         void removeTime(int removeTime);
 
+	/// @brief Adds a time change to the timeChanges vector to display on the GUI.
+	/// @param time The change in time for this time change.
+	void addTimeChange(int time);
+
         #pragma endregion Timer
 
     private:
+	const int TIME_OFFSET_X = 56;
+	const int TIME_CHANGE_OFFSET_Y = 20;
+	const float TIME_CHANGE_OFFSET_LERP = 0.2;
+	const int TIME_CHANGE_MOVE_DELAY_MS = 1000;
+	const double CLOCK_HAND_ANGLE_CHANGE = 360 / 60;	//Angle change per second (60 seconds = full rotation)
+	const float CLOCK_HAND_LENGTH = 9;
+	const int DELTA_CURRENT_TIME_CHANGE = 20 * 1000;
+	const int CLOCK_LOW_TIME = 10;				//10 seconds before the clock should become red
+
         CountdownTimer timer;
+	BitmapFont *font;
+	Texture *clockTexture;
+	double timeUntilSecond = 1.0;
+	double currentTimeChange = 0.0;
+	double clockHandAngle = -90;
+
+	std::vector<TimeChange> timeChanges;
 };
 
 #endif

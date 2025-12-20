@@ -38,6 +38,13 @@ target_sources(MyProgram
         src/objectDrawer.cpp
         src/collisionDrawer.cpp
         src/renderableObject.cpp
+	src/objGameClock.cpp
+	src/objTitleScreen.cpp
+	src/objWordSearchController.cpp
+	src/objWordSearchBox.cpp
+	src/nineSlice.cpp
+	src/drawingSurface.cpp
+	src/objRose.cpp
 )
 
 # Copy assets to build directory

@@ -73,6 +73,8 @@ class BitmapFont
         /// @param color The text color. Default is white.
         void drawText(SDL_Renderer *renderer, int x, int y, std::string text, SDL_Color color = {255, 255, 255, 255});     
 
+        void drawTextOutlined(SDL_Renderer *renderer, int x, int y, std::string text, SDL_Color color = {255, 255, 255, 255}, SDL_Color outlineColor = {0, 0, 0, 255}, TextAlign hAlign = LEFT, TextAlign vAlign = TOP);     
+	
         /// @brief Draws the given text with line width and separation.
         /// @param renderer The renderer to draw to.
         /// @param x The x position to draw at. Relative to the viewport.
@@ -107,6 +109,9 @@ class BitmapFont
         /// @param hAlign Horizontal alignment.
         /// @param vAlign Vertical alignment.
         void getTextAlignOffset(int &xOffset, int &yOffset, std::string text, int lineWidth = -1, int sep = -1, TextAlign hAlign = LEFT, TextAlign vAlign = TOP);
+
+	unsigned int getCharWidth(char c);
+	unsigned int getCharHeight(char c);
 
         //Figure out how to render the outline color and text color separately
             //THIS IS ONLY IF THE BITMAP FONT WAS GENERATED WITH A "baked outline"

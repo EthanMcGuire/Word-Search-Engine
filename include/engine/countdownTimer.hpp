@@ -28,6 +28,9 @@ class CountdownTimer
         /// @brief Starts the countdown timer, resetting it to the total time.
         void startTimer();
 
+	/// @return Returns true if the timer is currently active.
+	bool timerIsActive();
+
         /// @brief Pauses the countdown timer.
         void pauseTimer();
 
@@ -49,11 +52,14 @@ class CountdownTimer
         /// @return The remaining time in milliseconds.
         int getRemainingTime();
 
+	/// @return The current time change for the timer in milliseconds.
+	int getCurrentTimeChange();
+
         #pragma endregion Timer
 
     private:
 
-        const int DELTA_TIME_CHANGE = 30 * 1000;    //1 second for the timer to change by 30 seconds
+        const int DELTA_TIME_CHANGE = 20 * 1000;    //1 second for the timer to change by 20 seconds
 
         Timer timer;
         int totalTime;

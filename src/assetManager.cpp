@@ -188,6 +188,8 @@ void AssetManager::clearAssets()
     atlases.clear();
     fonts.clear();
     bitmaps.clear();
+
+    audioController->clearSoundAssets();
 }
 
 /// @brief Displays the number of loaded assets for each asset type.

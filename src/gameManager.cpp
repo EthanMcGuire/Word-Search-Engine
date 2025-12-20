@@ -5,7 +5,7 @@
 #include "room.hpp"
 #include "cameraLerp.hpp"
 #include "config.hpp"
-
+#include "eventDispatcher.hpp"
 #include "objectFactory.hpp"
 #include "objectManager.hpp"
 #include "objectDrawer.hpp"
@@ -16,7 +16,7 @@ GameManager::GameManager(Engine *engine)
     this->engine = engine;
 
     gamePaused = false;
-    showFPS = true;
+    showFPS = false;
 }
 
 GameManager::~GameManager()
@@ -48,11 +48,11 @@ void GameManager::initializeGameManager()
     objectManager = new ObjectManager();
 
     //Top level input events
-    engine->addSDLEventListener(SDL_EVENT_KEY_DOWN, [this](SDL_Event &e) {
+    getEventDispatcher()->addSDLListener(SDL_EVENT_KEY_DOWN, [this](SDL_Event &e) {
         this->keyboardCallback(e);
     });
 
-    engine->addSDLEventListener(SDL_EVENT_KEY_UP, [this](SDL_Event &e) {
+    getEventDispatcher()->addSDLListener(SDL_EVENT_KEY_UP, [this](SDL_Event &e) {
         this->keyboardCallback(e);
     });
 }
@@ -130,7 +130,7 @@ void GameManager::draw(SDL_Renderer *renderer)
 void GameManager::drawGui(SDL_Renderer *renderer)
 {
     //Default font
-    BitmapFont *font = getAssetManager()->getBitmap("fntOpenSans");
+    BitmapFont *font = getAssetManager()->getBitmap("fntOpenSansSmall");
 
     if (font == NULL)
     {
@@ -148,7 +148,7 @@ void GameManager::drawGui(SDL_Renderer *renderer)
         std::string text = "FPS: ";
         text += std::to_string((int) floor(engine->getFPS()));
 
-        font->drawText(renderer, 8, 8, text);
+        font->drawTextAligned(renderer, 956, 4, text, {255, 255, 255, 255}, TextAlign::RIGHT, TextAlign::TOP);
     }
 }
 
@@ -187,9 +187,18 @@ bool GameManager::loadRoom()
     //Create game objects
     std::vector<ObjectInfo> objects = room->getRoomObjects();
 
-    for (const auto& object : objects)
+    try
     {
-        createObject(object.objectName, object.x, object.y, object.parameters);
+	    for (const auto& object : objects)
+	    {
+		createObject(object.objectName, object.x, object.y, object.parameters);
+	    }
+    }
+    catch (std::exception& ex)
+    {
+	    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "GameManager: Failed to create objects when loading room. %s", ex.what());
+
+	    return false;
     }
 
     //Play music
@@ -334,6 +343,27 @@ void GameManager::keyboardCallback(SDL_Event &e)
                     ObjectDrawer::toggleGameObjectCollisionDisplays(objectManager);
                 }
                 break;
+
+		case SDLK_RETURN:
+		{
+			if (e.key.mod == SDL_KMOD_LALT || e.key.mod == SDL_KMOD_RALT)
+			{
+				fullscreen = !fullscreen;
+
+				SDL_SetWindowFullscreen(getWindow(), fullscreen);
+			}
+		}
+		break;
+		
+		case SDLK_F4:
+		{
+			if (e.key.mod == SDL_KMOD_LALT || e.key.mod == SDL_KMOD_RALT)
+			{
+				endGame();
+			}
+		}
+		break;
+
             }
         }
     } 
@@ -387,6 +417,11 @@ AudioController* GameManager::getAudioController() const
 EventDispatcher* GameManager::getEventDispatcher() const
 {
     return engine->getEventDispatcher();
+}
+
+SDL_Window* GameManager::getWindow() const
+{
+	return engine->getWindow();
 }
 
 /// @brief Pulls a bitmap font from the asset manager.
