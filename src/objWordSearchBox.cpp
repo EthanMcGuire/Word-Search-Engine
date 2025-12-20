@@ -15,6 +15,7 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 {
 	state = BoxState::BOX_STATE_WAITING;
 
+	//Load font
 	font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
 
 	if (font == NULL)
@@ -22,10 +23,7 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 		throw std::runtime_error("ObjWordSearchBox: Failed to load font.");
 	}
 
-	//Get the letter sizing and margins based on the font size
-	boxSizeBase = font->getCharWidth('W') + 8;
-	boxLetterMargin = font->getCharWidth('W') - 2;
-
+	//Load nine-slice
 	SpriteAtlas *atlas;
 
 	atlas = gameManager->getAssetManager()->getAtlas("wordSearchBox");
@@ -35,7 +33,6 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 		throw std::runtime_error("ObjWordSearchBox: Failed to load atlas for nine slice box.");
 	}
 
-	//Create GUI stuff
 	box = new NineSlice();
 	NineSliceSpriteInfo spriteInfo;
 
@@ -44,8 +41,14 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 	
 	box->setSpriteInfo(spriteInfo);
 
+	//Set grid box size to its minimum size
 	setBoxSize(MIN_BOX_SIZE);
 	
+	//Get the letter sizing and margins
+	borderSize = atlas->getSpriteWidth();
+	boxLetterMargin = borderSize + MARGIN_PIXELS + font->getCharWidth('W') / 2;
+	
+	//Letter drawing surface
 	letterSurface = new DrawingSurface();
 
 	//Input events
@@ -142,7 +145,7 @@ void ObjWordSearchBox::renderGui(SDL_Renderer *renderer)
 		rect = {(float) pos[0], (float) pos[1], (float) boxSize, (float) boxSize};
 
 		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 96);
+		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 128);
 		SDL_RenderFillRect(renderer, &rect);
 
 		box->render(renderer, pos[0], pos[1]);	
@@ -222,8 +225,8 @@ void ObjWordSearchBox::drawLetter(SDL_Renderer *renderer, LetterInfo letterInfo)
 
 	}
 
-	surfWidth = letterInfo.width + 8;
-	surfHeight = letterInfo.height + 8;
+	surfWidth = letterInfo.width;
+	surfHeight = letterInfo.height;
 
 	letterSurface->createSurface(renderer, surfWidth, surfHeight);
 	letterSurface->setBlendMode(SDL_BLENDMODE_BLEND);
@@ -260,12 +263,12 @@ void ObjWordSearchBox::setWrongLetterCallback(std::function<void()> callback)
 	wrongLetterCallback = std::move(callback);
 }
 
-void ObjWordSearchBox::initializeGrid(int size, std::vector<std::string> words)
+void ObjWordSearchBox::initializeGrid(int size, int letterSep, std::vector<std::string> words)
 {
 	clearGrid();
 
 	gridSize = size;
-	boxSizeGoal = boxSizeBase * gridSize;
+	boxSizeGoal = (boxLetterMargin * 2) + (font->getCharWidth('W') * gridSize) + (letterSep * (gridSize - 1));
 
 	grid = new LetterInfo*[gridSize];
 
@@ -373,6 +376,12 @@ void ObjWordSearchBox::populateWords(std::vector<std::string> words)
 				grid[i][j].letter = gameManager->getRandom()->getRandomInt(65, 90);
 				grid[i][j].width = font->getCharWidth(grid[i][j].letter);
 				grid[i][j].height = font->getCharHeight(grid[i][j].letter);
+
+				if (grid[i][j].letter == 'J')
+				{
+					grid[i][j].width += 6;
+					grid[i][j].height += 6;
+				}
 			}
 		}
 	}
@@ -554,6 +563,12 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 					grid[curY][curX].letter = word[pos];
 					grid[curY][curX].width = font->getCharWidth(grid[curY][curX].letter);
 					grid[curY][curX].height = font->getCharHeight(grid[curY][curX].letter);
+
+					if (grid[curY][curX].letter == 'J')
+					{
+						grid[curY][curX].width += 6;
+						grid[curY][curX].height += 6;
+					}
 
 					letterLocations.push_back({curY, curX});
 				}

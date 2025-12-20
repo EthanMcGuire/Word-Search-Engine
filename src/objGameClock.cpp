@@ -110,7 +110,7 @@ void ObjGameClock::renderGui(SDL_Renderer *renderer)
 	}
 
 	text = std::to_string(remainingTime);
-	font->drawTextAligned(renderer, pos[0] + TIME_OFFSET_X, pos[1], text, drawColor, TextAlign::RIGHT, TextAlign::CENTER);
+	font->drawTextOutlined(renderer, pos[0] + TIME_OFFSET_X, pos[1], text, drawColor, {0, 0, 0, 255}, TextAlign::RIGHT, TextAlign::CENTER);
 	
 	//Draw time changes
 	for (TimeChange timeChange : timeChanges)

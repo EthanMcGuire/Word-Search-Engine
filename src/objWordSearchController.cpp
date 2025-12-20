@@ -17,8 +17,9 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	loadWords(Config::WORDS_PATH);
 
 	font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
+	fontSmall = gameManager->getAssetManager()->getBitmap("fntOpenSansSmall");
 
-	if (font == NULL)
+	if (font == NULL || fontSmall == NULL)
 	{
 		throw std::runtime_error("ObjWordSearchController: Failed to load font.");
 	}
@@ -210,7 +211,7 @@ void ObjWordSearchController::drawWords(SDL_Renderer *renderer)
 			drawColor = {255, 0, 0, drawAlpha};
 		}
 
-		font->drawTextOutlined(renderer, word.x, word.y, word.word, drawColor, {0, 0, 0, drawAlpha}, TextAlign::LEFT, TextAlign::TOP);
+		fontSmall->drawTextOutlined(renderer, word.x, word.y, word.word, drawColor, {0, 0, 0, drawAlpha}, TextAlign::LEFT, TextAlign::TOP);
 
 		if (word.found)
 		{
@@ -292,19 +293,22 @@ void ObjWordSearchController::beginNextLevelDelay()
 void ObjWordSearchController::startNextLevel()
 {
 	std::vector<std::string> wordStrings;
+	int letterSep;
 
 	level++;
 
+	//Increase difficulty
 	if (level % DIFFICULTY_INCREASE_ROUND == 0)
 	{
-		difficulty = SDL_min(difficulty + 1, MAX_DIFFICULTY);
+		difficulty = SDL_min(difficulty + 20, MAX_DIFFICULTY);
 	}
 
-	gridSize = STARTING_GRID_SIZE + (difficulty - 1) * 1;
-	wordCountMin = STARTING_MIN_WORD_COUNT + (difficulty / 4);
-	wordCountMax = STARTING_MAX_WORD_COUNT + (difficulty / 4);
-	
 	SDL_Log("ObjWordSearchController: Starting next level. Level: %d, Difficulty: %d", level, difficulty);
+
+	gridSize = SDL_min(STARTING_GRID_SIZE + (difficulty - 1) * GRID_SIZE_INCREASE_RATE, MAX_GRID_SIZE);
+	wordCountMin = STARTING_MIN_WORD_COUNT + (difficulty / WORD_COUNT_INCREASE_DIFFICULTY);
+	wordCountMax = STARTING_MAX_WORD_COUNT + (difficulty / WORD_COUNT_INCREASE_DIFFICULTY);
+	letterSep = SDL_max(BASE_LETTER_SEP - (difficulty - 1), MIN_LETTER_SEP);	//Set the letter separation based on difficulty. Letters get closer together at higher difficulties
 
 	getWords();
 
@@ -313,7 +317,7 @@ void ObjWordSearchController::startNextLevel()
 		wordStrings.push_back(word.word);
 	}
 
-	wordSearchBox->initializeGrid(gridSize, wordStrings);
+	wordSearchBox->initializeGrid(gridSize, letterSep, wordStrings);
 	boxReady = false;
 	gameClock->pauseTimer();
 	
@@ -356,8 +360,8 @@ void ObjWordSearchController::getWords()
 			       return nextWord.word == word;
 		       }) != currentWords.end());
 		
-		width = font->getTextWidth(word);
-		height = font->getTextHeight(word);
+		width = fontSmall->getTextWidth(word);
+		height = fontSmall->getTextHeight(word);
 
 		currentWords.push_back({wordX, wordY, goalY, 0.f, 1.f, word, width, height, false});
 		goalY += height + GUI_WORDS_SEP_Y;

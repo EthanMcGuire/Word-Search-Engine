@@ -83,7 +83,7 @@ class ObjWordSearchController : public RenderableObject
 		//Gui constants
 		const int GUI_TEXT_OFFSET = 4;
 		const int GUI_TEXT_SEP_Y = 8;
-		const int GUI_WORDS_OFFSET_X = 8;
+		const int GUI_WORDS_OFFSET_X = 0;
 		const int GUI_WORDS_OFFSET_Y = 12;
 		const int GUI_WORDS_SEP_Y = 6;
 
@@ -104,13 +104,21 @@ class ObjWordSearchController : public RenderableObject
 
 		//Difficulty constants
 		const int MAX_DIFFICULTY = 20;
-		const int DIFFICULTY_INCREASE_ROUND = 5;	//Increase difficulty every 5 rounds
+		const int DIFFICULTY_INCREASE_ROUND = 1;	//Increase difficulty every 5 rounds
 
-		const int STARTING_GRID_SIZE = 6;
+		const int STARTING_GRID_SIZE = 4;
+		const int MAX_GRID_SIZE = 22;
+		const int GRID_SIZE_INCREASE_RATE = 1;	//Increase the grid size by 1 for every difficulty above 1
+
 		const int STARTING_MIN_WORD_COUNT = 2;
 		const int STARTING_MAX_WORD_COUNT = 3;
+		const int WORD_COUNT_INCREASE_DIFFICULTY = 3;	//Increase word count every 3 difficulties
+
 		const int MIN_WORD_LENGTH = 3;	//This will never change. Word length will be MIN_WORD_LENGTH -> GRID_SIZE (Capped at MAX_WORD_LENGTH) 
 		const int MAX_WORD_LENGTH = 31;
+
+		const int BASE_LETTER_SEP = 6;	//Letter separtion is reduced by 1 for every difficulty above 1 (down until MIN_LETTER_SEP)
+		const int MIN_LETTER_SEP = 0;
 
 		//Score constants
 		const float DIFFICULTY_MULTIPLIER = 0.1;	//Score multiplier added based on difficulty (only if difficulty is above 1)
@@ -133,6 +141,7 @@ class ObjWordSearchController : public RenderableObject
 		int endRoundDelay;
 
 		BitmapFont *font;
+		BitmapFont *fontSmall;
 		ObjWordSearchBox *wordSearchBox;
 		ObjGameClock *gameClock;
 

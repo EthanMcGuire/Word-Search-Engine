@@ -5,7 +5,7 @@
 #include "word.hpp"
 #include <SDL3/SDL_events.h>
 #include <string>
-#include <vector>
+#include <vector> 
 #include <functional>
 
 class BitmapFont;
@@ -55,7 +55,7 @@ class ObjWordSearchBox : public RenderableObject
 		void setWordsFoundCallback(std::function<void(std::vector<std::string>)> callback);
 		void setWrongLetterCallback(std::function<void()> callback);
 
-		void initializeGrid(int size, std::vector<std::string> words);
+		void initializeGrid(int size, int letterSep, std::vector<std::string> words);
 		void startRound();
 		void completeRound();
 		void shrinkBox();
@@ -82,29 +82,33 @@ class ObjWordSearchBox : public RenderableObject
 		std::vector<Word*> getWordsAtGridLocation(int gridX, int gridY);
 
 		const int MIN_BOX_SIZE = 8;
-		const int DELTA_BOX_SIZE = 256;
-		const int BOX_SIZE_BASE = 24;		
-		const int BOX_LETTER_MARGIN = 18;
-		const int BOX_SHRINK_DELAY = 500;	//Shrink delay after a round is completed (milliseconds)
+		const int DELTA_BOX_SIZE = 256;	//Box size change per second
+		const int MARGIN_PIXELS = 2;	//Margin in pixels letters will be from the border of the box
 
 		BitmapFont *font;
 		NineSlice *box;
 		DrawingSurface *letterSurface;
 
+		//State info
 		BoxState state;
 		bool roundCompleted = false;
+
+		//Box size variables
+		int borderSize;		//The size in pixels of the boxes borders (Nine-slice sprite size)
 		int boxSize;
 		int boxSizeGoal;
-		int boxSizeBase;	//Base size in pixels of the box based. Gets multiplied by the number of characters (width/heigth)
-		int boxLetterMargin;	//Inner box masrgin for letters
-		int gridSize;
-		int shrinkDelay;
+		int boxLetterMargin;	//Inner box margin for letters
 
+		//Current grid data 
 		std::vector<Word*> currentWords;
+		LetterInfo** grid = NULL;
+		int gridSize;
+
+		//Hovered letter info
 		LetterInfo *hoveredLetter = NULL;
 		int hoveredLetterGridX, hoveredLetterGridY;
-		LetterInfo** grid = NULL;
 
+		//Callbacks and listeners
 		std::function<void()> readyCallback = NULL;
 		std::function<void()> doneShrinkingCallback = NULL;
 		std::function<void(std::vector<std::string>)> wordsFoundCallback = NULL;
