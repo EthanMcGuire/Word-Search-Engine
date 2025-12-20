@@ -39,28 +39,77 @@
             "assetType": "bitmap"   
         },
         {
-            "filePath": "assets/font/openSansBold/fntOpenSansBold.fnt",
-            "assetType": "bitmap"   
-        },
-        {
-            "filePath": "assets/font/openSansOutline/fntOpenSansOutline.fnt",
-            "assetType": "bitmap"   
-        },
-        {
-            "filePath": "assets/font/openSansSmall/fntOpenSansSmall.fnt",
+            "filePath": "assets/font/openSansSmall/openSansSmall.fnt",
             "assetType": "bitmap"   
         },
         {
             "filePath": "assets/font/openSansBig/fntOpenSansBig.fnt",
             "assetType": "bitmap"   
         },
+	{
+	    "filePath": "assets/font/gothic/newsGothic.fnt",
+	    "assetType": "bitmap"
+	},
         {
+	    "filePath": "assets/font/gothicSmall/newsGothicSmall.fnt",
+	    "assetType": "bitmap"
+	},
+	{
+	    "filePath": "assets/font/javanese/javanese.fnt",
+	    "assetType": "bitmap"
+	},
+        {
+	    "filePath": "assets/font/javaneseSmall/javaneseSmall.fnt",
+	    "assetType": "bitmap"
+	},
+	{
+	    "filePath": "assets/font/sitka/sitka.fnt",
+	    "assetType": "bitmap"
+	},
+        {
+	    "filePath": "assets/font/sitkaSmall/sitkaSmall.fnt",
+	    "assetType": "bitmap"
+	},
+	{
             "filePath": "assets/audio/music/calm_track.wav",
             "assetType": "music"
         },
         {
             "filePath": "assets/audio/music/crickets.wav",
             "assetType": "music"
-        }
+        },
+	{
+            "filePath": "assets/audio/music/nextToYou.wav",
+            "assetType": "music"
+        },
+	{
+            "filePath": "assets/audio/music/encounter.wav",
+            "assetType": "music"
+        },
+	{
+            "filePath": "assets/audio/music/gameOver.wav",
+            "assetType": "music"
+        },
+	{
+            "filePath": "assets/audio/sound/point.wav",
+            "assetType": "sound"
+        },
+	{
+            "filePath": "assets/audio/sound/winRound.wav",
+            "assetType": "sound"
+        },
+	{
+            "filePath": "assets/audio/sound/wrongWord.wav",
+            "assetType": "sound"
+        },
+	{
+            "filePath": "assets/audio/sound/clock/clock.wav",
+            "assetType": "sound"
+        },
+	{
+	    "filePath": "assets/audio/sound/correct_word/jingles/Item2A.wav",
+	    "assetType": "sound"
+	}
+
     ]
 }

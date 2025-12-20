@@ -55,7 +55,10 @@ class ObjWordSearchBox : public RenderableObject
 		void setWordsFoundCallback(std::function<void(std::vector<std::string>)> callback);
 		void setWrongLetterCallback(std::function<void()> callback);
 
-		void initializeGrid(int size, int letterSep, std::vector<std::string> words);
+		void initializeGrid(int size, int letterSep);
+		bool addWord(std::string words);
+		void allWordsAdded();
+
 		void startRound();
 		void completeRound();
 		void shrinkBox();
@@ -66,8 +69,7 @@ class ObjWordSearchBox : public RenderableObject
 
 		void clearGrid();
 		void clearCurrentWords();
-		void populateWords(std::vector<std::string> words);
-		void addWordToGrid(std::string);
+		bool addWordToGrid(std::string);
 
 		void boxReady();
 
@@ -84,6 +86,8 @@ class ObjWordSearchBox : public RenderableObject
 		const int MIN_BOX_SIZE = 8;
 		const int DELTA_BOX_SIZE = 256;	//Box size change per second
 		const int MARGIN_PIXELS = 2;	//Margin in pixels letters will be from the border of the box
+		const int MAX_WORD_PLACE_ATTEMPTS = 50;	//Number of times we will attempt to place a word with a given direction
+		const int MAX_WORD_ADD_ATTEMPTS = 10;	//Number of times we will attempt to add a word
 
 		BitmapFont *font;
 		NineSlice *box;

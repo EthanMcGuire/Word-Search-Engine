@@ -45,15 +45,14 @@ bool AudioController::initialize()
 
 bool AudioController::update()
 {
+    cleanUpFinishedSounds();
+
     if (playingMusic())
     {
         int queuedBytes;
-        Sound *sound;
-
-        sound = musics.find(currentMusic)->second;
-
+        
         //Check if we need to queue another loop of music
-        queuedBytes = SDL_GetAudioStreamQueued(sound->stream);
+        queuedBytes = SDL_GetAudioStreamQueued(musicStream);
 
         if (queuedBytes == -1)
         {
@@ -67,7 +66,11 @@ bool AudioController::update()
         //Loop if the remaining music to play is under 100 bytes
         if (queuedBytes <= 100)
         {
-            if (!queueSound(sound))
+	    Sound *sound;
+
+	    sound = musics.find(currentMusic)->second;
+
+            if (!queueSound(sound, musicStream))
             {
                 return false;
             }
@@ -101,9 +104,13 @@ bool AudioController::playMusic(std::string soundName)
     Sound *sound;
 
     sound = musics.find(soundName)->second;
+    musicStream = createAudioStream(&sound->spec);
 
-    if (!queueSound(sound))
+    if (!queueSound(sound, musicStream))
     {
+	freeAudioStream(musicStream);
+	musicStream = NULL;
+
         return false;
     }
 
@@ -114,20 +121,10 @@ bool AudioController::playMusic(std::string soundName)
 
 bool AudioController::stopMusic()
 {
-    if (!playingMusic())
+    if (musicStream != NULL)
     {
-        return true;
-    }
-
-    Sound *sound;
-
-    sound = musics.find(currentMusic)->second;
-
-    if (!SDL_ClearAudioStream(sound->stream))
-    {
-        SDL_Log("AudioController: Failed to clear audio stream for music source: %s", currentMusic.c_str());
-
-        return false;
+	    freeAudioStream(musicStream);
+	    musicStream = NULL;
     }
 
     currentMusic = "";
@@ -135,7 +132,7 @@ bool AudioController::stopMusic()
     return true;
 }
 
-/// @brief Plays a sound effect for the given sound. If the sound is already playing, it will queue behind the current instance.
+/// @brief Plays a sound effect for the given sound.
 /// @param soundName The name of the sound to play.
 /// @return True on success, false on failure.
 bool AudioController::playSound(std::string soundName)
@@ -150,23 +147,30 @@ bool AudioController::playSound(std::string soundName)
     }
 
     Sound *sound;
+    SDL_AudioStream *stream;
 
     sound = sounds.find(soundName)->second;
+    stream = createAudioStream(&sound->spec);
 
-    if (!queueSound(sound))
+    if (!queueSound(sound, stream))
     {
+	freeAudioStream(stream);
+
         return false;
     }
+
+    soundStreams.push_back(stream);
 
     return true;
 }
 
-/// @brief Queues playback for the  given Sound. If the sound is already playing, it will queue behind the current data.
-/// @param Sound The Sound to queue.
+/// @brief Queues playback for the given Sound.
+/// @param sound The Sound to queue.
+/// @param stream The audio stream to queue the sound data to.
 /// @return True on success, false on failure.
-bool AudioController::queueSound(Sound *sound)
+bool AudioController::queueSound(Sound *sound, SDL_AudioStream *stream)
 {
-     if (!SDL_PutAudioStreamData(sound->stream, sound->wav_data, (int) sound->wav_data_len))
+     if (!SDL_PutAudioStreamData(stream, sound->wav_data, (int) sound->wav_data_len))
      {
         return false;
      }
@@ -203,6 +207,8 @@ size_t AudioController::getSoundCount()
 /// @brief Frees all of the sound assets.
 void AudioController::clearSoundAssets()
 {
+    freeAudioStreams();
+
     if (musics.empty() && sounds.empty()) return;
 
     SDL_Log("AudioController: Freeing all sound assets...");
@@ -295,36 +301,16 @@ bool AudioController::loadSound(const char *fname, std::string soundName)
 /// @return True on success, false on failure.
 bool AudioController::initSound(const char *fname, Sound *sound)
 {
-    SDL_AudioSpec spec;
     char *wav_path = NULL;
-    bool success = false;
+    bool success = true;
 
     SDL_asprintf(&wav_path, "%s%s", SDL_GetBasePath(), fname);
 
-    if (!SDL_LoadWAV(wav_path, &spec, &sound->wav_data, &sound->wav_data_len)) 
+    if (!SDL_LoadWAV(wav_path, &sound->spec, &sound->wav_data, &sound->wav_data_len)) 
     {
         SDL_Log("AudioController: Couldn't load .wav file: %s", SDL_GetError());
 
-        return false;
-    }
-
-    /* Create an audio stream. Set the source format to the wav's format (what
-       we'll input), leave the dest format NULL here (it'll change to what the
-       device wants once we bind it). */
-    sound->stream = SDL_CreateAudioStream(&spec, NULL);
-
-    if (!sound->stream) 
-    {
-        SDL_Log("AudioController: Couldn't create audio stream: %s", SDL_GetError());
-    } 
-    else if (!SDL_BindAudioStream(audio_device, sound->stream)) 
-    {  
-        /* once bound, it'll start playing when there is data available! */
-        SDL_Log("AudioController: Failed to bind '%s' stream to device: %s", fname, SDL_GetError());
-    } 
-    else 
-    {
-        success = true;
+        success = false;
     }
 
     SDL_free(wav_path);
@@ -336,12 +322,14 @@ bool AudioController::initSound(const char *fname, Sound *sound)
 /// @param sound The Sound to free.
 void AudioController::freeSound(Sound *sound)
 {
+    /*
     if (sound->stream) 
     {
         SDL_DestroyAudioStream(sound->stream);
 
         sound->stream = NULL;
     }
+    */
 
     SDL_free(sound->wav_data);
 
@@ -349,3 +337,84 @@ void AudioController::freeSound(Sound *sound)
 }
 
 #pragma endregion SoundLoading
+
+/// @brief Creates an audio stream.
+/// @return The audio stream, or NULL if it failed to create.
+SDL_AudioStream* AudioController::createAudioStream(SDL_AudioSpec *spec)
+{
+	SDL_AudioStream *stream;
+
+	/* Create an audio stream. Set the source format to the wav's format (what
+	       we'll input), leave the dest format NULL here (it'll change to what the
+	       device wants once we bind it). */
+	stream = SDL_CreateAudioStream(spec, NULL);
+
+	if (!stream) 
+	{
+		SDL_Log("AudioController: Failed to create audio stream. Error: %s", SDL_GetError());
+
+		stream = NULL;
+	} 
+	else if (!SDL_BindAudioStream(audio_device, stream)) 
+	{  
+		/* once bound, it'll start playing when there is data available! */
+		SDL_Log("AudioController: Failed to bind audio stream to the audio device. Error: %s", SDL_GetError());
+
+		freeAudioStream(stream);
+		stream = NULL;
+	} 
+
+	return stream;
+
+}
+
+void AudioController::freeAudioStreams()
+{
+	if (musicStream != NULL)
+	{
+		freeAudioStream(musicStream);
+		musicStream = NULL;
+	}
+
+	for (int i = 0; i < soundStreams.size() ; i++)
+	{
+		freeAudioStream(soundStreams[i]);
+	}
+
+	soundStreams.clear();
+}
+
+void AudioController::cleanUpFinishedSounds()
+{
+	if (soundStreams.size() == 0) return;
+
+	//SDL_Log("AudioController: Cleaning up finished sounds...");
+
+	for (int i = soundStreams.size() - 1; i >= 0; i--)
+	{
+		int queuedBytes;
+        
+		queuedBytes = SDL_GetAudioStreamQueued(soundStreams[i]);
+
+		if (queuedBytes == -1)
+		{
+		    SDL_Log("AudioController: Failed to get queued bytes for sound stream. Error: %s", SDL_GetError());
+
+		    continue;
+		}
+		
+		if (queuedBytes <= 50)
+		{
+			freeAudioStream(soundStreams[i]);
+			soundStreams.erase(soundStreams.begin() + i);
+
+			SDL_Log("AudioController: Cleaned up sound");
+			SDL_Log("AudioController: Number of sound streams that exist: %ld", soundStreams.size());
+		}
+	}
+}
+
+void AudioController::freeAudioStream(SDL_AudioStream *stream)
+{
+	SDL_DestroyAudioStream(stream);
+}

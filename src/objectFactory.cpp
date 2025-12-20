@@ -42,7 +42,7 @@ Object* ObjectFactory::createObject(GameManager *gameManager, std::string object
     }
     else if (objectName == "objrose")
     {
-	    return new ObjRose(gameManager, x, y, std::get<double>(args[0]), std::get<double>(args[1]), std::get<int>(args[2]));
+	    return new ObjRose(gameManager, x, y, std::get<double>(args[0]), std::get<double>(args[1]), std::get<double>(args[2]), std::get<int>(args[3]));
     }
     //
     //Object doesn't exist

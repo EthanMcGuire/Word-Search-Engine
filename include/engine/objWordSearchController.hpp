@@ -63,6 +63,8 @@ class ObjWordSearchController : public RenderableObject
 		void boxReadyCallback();
 		void boxDoneShrinkingCallback();
 		void gameClockCompletedCallback();
+		void gameClockHitLowTimeCallback();
+		void gameClockAboveLowTimeCallback();
 
 		/// @bried Called by the WordSearchBox when a wrong letter is selected.
 		void wrongLetterCallback();
@@ -73,7 +75,7 @@ class ObjWordSearchController : public RenderableObject
 
 		int getWordLengthScore(int length);
 		void createRoses(double x, double y, float scoreToAdd);
-		void createRose(double x, double y, RoseSize size, int score);
+		void createRose(double x, double y, RoseSize size, double direction, int score);
 		void addScore(int scoreToAdd);
 
 		//Constants
@@ -90,6 +92,7 @@ class ObjWordSearchController : public RenderableObject
 		const float WORD_MOVE_LERP_RATE = 0.2;
 		const float WORD_ALPHA_LERP_RATE = 0.2;
 		const int WORD_MOVE_MIN_Y_DISTANCE = 1;
+		const int WORD_ROSE_SPAWN_X_OFFSET = 8;
 
 		const std::string LEVEL_TEXT = "LEVEL: ";
 		const std::string DIF_TEXT = "DIF: ";
@@ -104,15 +107,15 @@ class ObjWordSearchController : public RenderableObject
 
 		//Difficulty constants
 		const int MAX_DIFFICULTY = 20;
-		const int DIFFICULTY_INCREASE_ROUND = 1;	//Increase difficulty every 5 rounds
+		const int DIFFICULTY_INCREASE_ROUND = 3;	//Increase difficulty every 5 rounds
 
-		const int STARTING_GRID_SIZE = 4;
+		const int STARTING_GRID_SIZE = 5;
 		const int MAX_GRID_SIZE = 22;
 		const int GRID_SIZE_INCREASE_RATE = 1;	//Increase the grid size by 1 for every difficulty above 1
 
 		const int STARTING_MIN_WORD_COUNT = 2;
 		const int STARTING_MAX_WORD_COUNT = 3;
-		const int WORD_COUNT_INCREASE_DIFFICULTY = 3;	//Increase word count every 3 difficulties
+		const int WORD_COUNT_INCREASE_DIFFICULTY = 2;	//Increase word count every 2 difficulties
 
 		const int MIN_WORD_LENGTH = 3;	//This will never change. Word length will be MIN_WORD_LENGTH -> GRID_SIZE (Capped at MAX_WORD_LENGTH) 
 		const int MAX_WORD_LENGTH = 31;

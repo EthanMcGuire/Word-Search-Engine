@@ -130,11 +130,11 @@ void GameManager::draw(SDL_Renderer *renderer)
 void GameManager::drawGui(SDL_Renderer *renderer)
 {
     //Default font
-    BitmapFont *font = getAssetManager()->getBitmap("fntOpenSansSmall");
+    BitmapFont *font = getAssetManager()->getBitmap("openSansSmall");
 
     if (font == NULL)
     {
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "GameManager: Font fntOpenSans does not exist!");
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "GameManager: Font openSansSmall does not exist!");
 
         return;
     }

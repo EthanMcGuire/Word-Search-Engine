@@ -2,14 +2,16 @@
 #include "gameManager.hpp"
 #include "texture.hpp"
 #include "assetManager.hpp"
+#include "audioController.hpp"
 #include <stdexcept>
 
-ObjRose::ObjRose(GameManager *gameManager, double x, double y, double goalX, double goalY, int score) : RenderableObject("ObjRose", gameManager, x, y)
+ObjRose::ObjRose(GameManager *gameManager, double x, double y, double goalX, double goalY, double spawnDirection, int score) : RenderableObject("ObjRose", gameManager, x, y)
 {
 	setDrawDepth(-9999);
 
 	goal = gmtl::Vec2d(goalX, goalY);
 	moveVector = gmtl::Vec2d(0.0, 0.0);
+	this->spawnDirection = spawnDirection;
 	this->score = score;
 
 	setRoseSize(RoseSize::ROSE_SIZE_SMALL);
@@ -17,28 +19,54 @@ ObjRose::ObjRose(GameManager *gameManager, double x, double y, double goalX, dou
 
 void ObjRose::update(double deltaTime)
 {
-	gmtl::Vec2d desiredMoveVector;
-	gmtl::Vec2d distance;
-
-	desiredMoveVector = goal - pos;
-	gmtl::normalize(desiredMoveVector);
-	desiredMoveVector *= ROSE_SPEED;
-
-	gmtl::lerp(moveVector, VELOCITY_LERP_RATE, moveVector, desiredMoveVector);
-
-	pos += moveVector * deltaTime;
-
-	distance = goal - pos;
-
-	if (gmtl::length(distance) <= GOAL_LOCATION_RANGE)
+	if (state == RoseState::ROSE_STATE_START)
 	{
-		if (addScoreCallback == NULL)
-		{
-			throw std::runtime_error("ObjRose: addScoreCallback was not set!");
-		}
+		gmtl::Vec2d desiredMoveVector;
+		gmtl::Vec2d goalLocation;
 
-		addScoreCallback(score);
-		destroy();	
+		goalLocation = gmtl::Vec2d(pos[0] + SDL_cos(spawnDirection), pos[1] + SDL_sin(spawnDirection));
+
+		desiredMoveVector = goalLocation - pos;
+		gmtl::normalize(desiredMoveVector);
+		desiredMoveVector *= ROSE_SPEED;
+
+		gmtl::lerp(moveVector, VELOCITY_LERP_RATE, moveVector, desiredMoveVector);
+
+		pos += moveVector * deltaTime;
+
+		remainingSpreadDistance -= gmtl::length(moveVector) * deltaTime;
+
+		if (remainingSpreadDistance <= 0.0)
+		{
+			state = RoseState::ROSE_STATE_GOAL;
+		}
+	}
+	else
+	{
+		gmtl::Vec2d desiredMoveVector;
+		gmtl::Vec2d distance;
+
+		desiredMoveVector = goal - pos;
+		gmtl::normalize(desiredMoveVector);
+		desiredMoveVector *= ROSE_SPEED;
+
+		gmtl::lerp(moveVector, VELOCITY_LERP_RATE, moveVector, desiredMoveVector);
+
+		pos += moveVector * deltaTime;
+
+		distance = goal - pos;
+
+		if (gmtl::length(distance) <= GOAL_LOCATION_RANGE)
+		{
+			if (addScoreCallback == NULL)
+			{
+				throw std::runtime_error("ObjRose: addScoreCallback was not set!");
+			}
+
+			addScoreCallback(score);
+			gameManager->getAudioController()->playSound("point");
+			destroy();	
+		}
 	}
 }
 

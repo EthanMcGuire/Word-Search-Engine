@@ -10,7 +10,7 @@
 
 ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : RenderableObject("objGameClock", gameManager, x, y)
 {
-    font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
+    font = gameManager->getAssetManager()->getBitmap("newsGothicSmall");
 
     if (font == NULL)
     {
@@ -29,6 +29,8 @@ ObjGameClock::ObjGameClock(GameManager *gameManager, double x, double y) : Rende
 /// @param deltaTime Time change in seconds since last frame.
 void ObjGameClock::update(double deltaTime)
 {
+    int remainingTime;
+
     timer.update(deltaTime);
 
     if (timer.timerIsActive())
@@ -78,6 +80,38 @@ void ObjGameClock::update(double deltaTime)
 		}
 	}
     }
+
+    remainingTime = (int) SDL_ceil(timer.getRemainingTime() / 1000.f);
+
+    if (timeIsLow)
+    {
+	if (remainingTime > CLOCK_LOW_TIME)
+        {
+		timeIsLow = false;
+
+		if (aboveLowTimeCallback == NULL)
+		{
+			throw std::runtime_error("ObjGameClock: aboveLowTimeCallback was not set.");
+		}
+
+		aboveLowTimeCallback();
+	}
+    }
+    else
+    {
+	if (remainingTime <= CLOCK_LOW_TIME)
+        {
+		timeIsLow = true;
+
+		if (hitLowTimeCallback == NULL)
+		{
+			throw std::runtime_error("ObjGameClock: hitLowTimeCallback was not set.");
+		}
+
+		hitLowTimeCallback();
+	}
+    }
+    
 }
 
 /// @brief Renders this game objects GUI.
@@ -100,7 +134,7 @@ void ObjGameClock::renderGui(SDL_Renderer *renderer)
 	//Draw remaining time
 	remainingTime = (int) SDL_ceil(timer.getRemainingTime() / 1000.f);
 
-	if (remainingTime <= CLOCK_LOW_TIME)
+	if (timeIsLow)
 	{
 		drawColor = {255, 0, 0, 255};
 	}
@@ -141,9 +175,25 @@ void ObjGameClock::renderGui(SDL_Renderer *renderer)
 	}
 }
 
-void ObjGameClock::setCallbackFunction(std::function<void()> callback)
+/// @brief Sets the callback function to call once the clock reaches 0.
+/// @param callback The callback function.
+void ObjGameClock::setTimerCompletedCallback(std::function<void()> callback)
 {
 	timer.setCallbackFunction(callback);
+}
+
+/// @brief Sets the callback function to call once the clock hits or is below the low time.
+/// @param callback The callback function.
+void ObjGameClock::setHitLowTimeCallback(std::function<void()> callback)
+{
+	hitLowTimeCallback = std::move(callback); 
+}
+
+/// @brief Sets the callback function to call once the clock goes from low time to above the low time line.
+/// @param callback The callback function.
+void ObjGameClock::setAboveLowTimeCallback(std::function<void()> callback)
+{
+	aboveLowTimeCallback = std::move(callback);
 }
 
 #pragma region Timer

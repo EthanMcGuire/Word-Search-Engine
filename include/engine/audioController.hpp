@@ -6,12 +6,13 @@
 #include <SDL3/SDL_audio.h>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 typedef struct Sound
 {
     Uint8 *wav_data;
     Uint32 wav_data_len;
-    SDL_AudioStream *stream;
+    SDL_AudioSpec spec;
 } Sound;
 
 class AudioController
@@ -37,7 +38,7 @@ class AudioController
         /// @return True on success, false on failure.
         bool stopMusic();
 
-        /// @brief Plays a sound effect for the given sound. If the sound is already playing, it will queue behind the current instance.
+        /// @brief Plays a sound effect for the given sound.
         /// @param soundSource The SoundSource to play.
         /// @return True on success, false on failure.
         bool playSound(std::string soundName);
@@ -80,10 +81,11 @@ class AudioController
 
         #pragma region Playback
 
-        /// @brief Queues playback for the  given Sound. If the sound is already playing, it will queue behind the current data.
-        /// @param Sound The Sound to queue.
+        /// @brief Queues playback for the given Sound.
+        /// @param sound The Sound to queue.
+        /// @param stream The audio stream to queue the sound data to.
         /// @return True on success, false on failure.
-        bool queueSound(Sound *sound);
+        bool queueSound(Sound *sound, SDL_AudioStream *stream);
 
         #pragma endregion Playback
 
@@ -101,7 +103,16 @@ class AudioController
 
         #pragma endregion SoundLoading 
 
+	SDL_AudioStream *createAudioStream(SDL_AudioSpec *spec);
+	void freeAudioStreams();
+	void cleanUpFinishedSounds();
+	void freeAudioStream(SDL_AudioStream *stream);
+
         SDL_AudioDeviceID audio_device;
+
+	SDL_AudioStream *musicStream = NULL;
+	std::vector<SDL_AudioStream*> soundStreams;
+
         std::unordered_map<std::string, Sound*> musics;
         std::unordered_map<std::string, Sound*> sounds;
 

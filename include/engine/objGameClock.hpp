@@ -4,6 +4,7 @@
 #include "renderableObject.hpp"
 #include "countdownTimer.hpp"
 #include <vector>
+#include <functional>
 
 class GameManager;
 class BitmapFont;
@@ -31,7 +32,15 @@ class ObjGameClock : public RenderableObject
 
 	/// @brief Sets the callback function to call once the clock reaches 0.
 	/// @param callback The callback function.
-	void setCallbackFunction(std::function<void()> callback);
+	void setTimerCompletedCallback(std::function<void()> callback);
+	
+	/// @brief Sets the callback function to call once the clock hits or is below the low time.
+	/// @param callback The callback function.
+	void setHitLowTimeCallback(std::function<void()> callback);
+	
+	/// @brief Sets the callback function to call once the clock goes from low time to above the low time line.
+	/// @param callback The callback function.
+	void setAboveLowTimeCallback(std::function<void()> callback);
 
         #pragma region Timer
 
@@ -63,7 +72,7 @@ class ObjGameClock : public RenderableObject
         #pragma endregion Timer
 
     private:
-	const int TIME_OFFSET_X = 56;
+	const int TIME_OFFSET_X = 64;
 	const int TIME_CHANGE_OFFSET_Y = 20;
 	const float TIME_CHANGE_OFFSET_LERP = 0.2;
 	const int TIME_CHANGE_MOVE_DELAY_MS = 1000;
@@ -78,8 +87,12 @@ class ObjGameClock : public RenderableObject
 	double timeUntilSecond = 1.0;
 	double currentTimeChange = 0.0;
 	double clockHandAngle = -90;
+	bool timeIsLow = false;
 
 	std::vector<TimeChange> timeChanges;
+
+	std::function<void()> hitLowTimeCallback = NULL;
+	std::function<void()> aboveLowTimeCallback = NULL; 
 };
 
 #endif

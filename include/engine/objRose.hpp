@@ -9,6 +9,12 @@
 class GameManager;
 class Texture;
 
+enum RoseState
+{
+	ROSE_STATE_START,
+	ROSE_STATE_GOAL
+};
+
 enum RoseSize
 {
 	ROSE_SIZE_SMALL,
@@ -19,7 +25,7 @@ enum RoseSize
 class ObjRose : public RenderableObject
 {
 	public:
-		ObjRose(GameManager *gameManager, double x, double y, double goalX, double goalY, int score);
+		ObjRose(GameManager *gameManager, double x, double y, double goalX, double goalY, double spawnDirection, int score);
 
 		void update(double deltaTime) override;
 		void renderGui(SDL_Renderer *renderer) override;
@@ -29,13 +35,20 @@ class ObjRose : public RenderableObject
 
 	private:
 		const int ROSE_SPEED = 416;
+		const int START_SPREAD_DISTANCE = 16;	//Distance the rose moves before moving towards its goal
 		static const constexpr double VELOCITY_LERP_RATE = 0.05;
 		static const constexpr double GOAL_LOCATION_RANGE = 16;	//Distance to goal location needed before being collected
 
 		Texture *roseTexture = NULL;
+		RoseState state = RoseState::ROSE_STATE_START;
 		RoseSize roseSize;
+
 		gmtl::Vec2d goal;
 		gmtl::Vec2d moveVector;
+		
+		double spawnDirection;
+		double remainingSpreadDistance = START_SPREAD_DISTANCE;
+
 		int score;
 
 		std::function<void(int)> addScoreCallback = NULL;

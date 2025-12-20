@@ -16,7 +16,10 @@ ObjWordSearchBox::ObjWordSearchBox(GameManager *gameManager, double x, double y)
 	state = BoxState::BOX_STATE_WAITING;
 
 	//Load font
-	font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
+	//font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
+	font = gameManager->getAssetManager()->getBitmap("sitkaSmall");
+	//font = gameManager->getAssetManager()->getBitmap("newsGothicSmall");
+	//font = gameManager->getAssetManager()->getBitmap("javanese");
 
 	if (font == NULL)
 	{
@@ -263,7 +266,7 @@ void ObjWordSearchBox::setWrongLetterCallback(std::function<void()> callback)
 	wrongLetterCallback = std::move(callback);
 }
 
-void ObjWordSearchBox::initializeGrid(int size, int letterSep, std::vector<std::string> words)
+void ObjWordSearchBox::initializeGrid(int size, int letterSep)
 {
 	clearGrid();
 
@@ -282,7 +285,42 @@ void ObjWordSearchBox::initializeGrid(int size, int letterSep, std::vector<std::
 		}
 	}
 
-	populateWords(words);
+	clearCurrentWords();
+}
+
+bool ObjWordSearchBox::addWord(std::string word)
+{
+	if (grid == NULL)
+	{
+		throw std::runtime_error("ObjWordSearchBox: Attempted to add word when grid is NULL!");
+	}
+
+	SDL_Log("ObjWordSearchBox: Adding word: %s", word.c_str());
+
+	return addWordToGrid(word);
+}
+
+void ObjWordSearchBox::allWordsAdded()
+{
+	//Scramble the unset letters
+	for (int i = 0; i < gridSize; i++)
+	{
+		for (int j = 0; j < gridSize; j++)
+		{
+			if (grid[i][j].letter == '?')
+			{
+				grid[i][j].letter = gameManager->getRandom()->getRandomInt(65, 90);
+				grid[i][j].width = font->getCharWidth(grid[i][j].letter);
+				grid[i][j].height = font->getCharHeight(grid[i][j].letter);
+
+				if (grid[i][j].letter == 'J')
+				{
+					grid[i][j].width += 6;
+					grid[i][j].height += 6;
+				}
+			}
+		}
+	}
 
 	state = BoxState::BOX_STATE_EXPANDING;
 }
@@ -344,53 +382,11 @@ void ObjWordSearchBox::clearCurrentWords()
 	currentWords.clear();
 }
 
-void ObjWordSearchBox::populateWords(std::vector<std::string> words)
-{
-	if (grid == NULL)
-	{
-		throw std::runtime_error("ObjWordSearchBox: Attempted to populate words when grid is NULL!");
-	}
-
-	clearCurrentWords();
-
-	//Sorts words in descending order. We do this to place the biggest words on the grid first
-	std::sort(words.begin(), words.end(), [] (std::string &lhs, std::string &rhs) {
-				return lhs.length() > rhs.length();
-			});
-
-	for (std::string word : words)
-	{
-		SDL_Log("ObjWordSearchBox: Adding word: %s", word.c_str());
-
-		//Add to the grid
-		addWordToGrid(word);
-	}
-	
-	//Scramble the unset letters
-	for (int i = 0; i < gridSize; i++)
-	{
-		for (int j = 0; j < gridSize; j++)
-		{
-			if (grid[i][j].letter == '?')
-			{
-				grid[i][j].letter = gameManager->getRandom()->getRandomInt(65, 90);
-				grid[i][j].width = font->getCharWidth(grid[i][j].letter);
-				grid[i][j].height = font->getCharHeight(grid[i][j].letter);
-
-				if (grid[i][j].letter == 'J')
-				{
-					grid[i][j].width += 6;
-					grid[i][j].height += 6;
-				}
-			}
-		}
-	}
-}
-
-void ObjWordSearchBox::addWordToGrid(std::string word)
+bool ObjWordSearchBox::addWordToGrid(std::string word)
 {
 	int length;
 	bool success;
+	int attempts = 0;
 	Random *random;
 
 	random = gameManager->getRandom();
@@ -399,7 +395,7 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 
 	success = false;
 
-	while (!success)
+	while (!success && attempts < MAX_WORD_ADD_ATTEMPTS)
 	{
 		int dir;
 		int xDir, yDir;
@@ -520,7 +516,7 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 			maxY = gridSize - 1;
 		}
 
-		for (int i = 0; i < 50; i++)
+		for (int i = 0; i < MAX_WORD_PLACE_ATTEMPTS; i++)
 		{
 			int xPos, yPos;
 			bool hitWord = false;
@@ -588,7 +584,16 @@ void ObjWordSearchBox::addWordToGrid(std::string word)
 				break;
 			}
 		}
+
+		attempts++;
 	}
+
+	if (!success)
+	{
+		SDL_Log("ObjWordSearchBox: Failed to add word. Word: %s", word.c_str());
+	}
+
+	return success;
 }
 
 void ObjWordSearchBox::boxReady()
@@ -635,18 +640,18 @@ void ObjWordSearchBox::updateLetterPositions()
 {
 	if (grid == NULL) return;
 
-	int letterX, letterY;
-	int availableSpace;
-	int letterSpacing;
+	float letterX, letterY;
+	float availableSpace;
+	float letterSpacing;
 
 	availableSpace = boxSize - (boxLetterMargin * 2);
 	letterSpacing = availableSpace / (gridSize - 1);
 
-	letterY = (int) (pos[1] + boxLetterMargin);
+	letterY = pos[1] + boxLetterMargin;
 
 	for (int i = 0; i < gridSize; i++)
 	{
-		letterX = (int) (pos[0] + boxLetterMargin);
+		letterX = pos[0] + boxLetterMargin;
 
 		for (int j = 0; j < gridSize; j++)
 		{
