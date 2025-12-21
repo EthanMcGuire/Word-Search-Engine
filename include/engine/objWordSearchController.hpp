@@ -10,6 +10,7 @@
 class BitmapFont;
 class ObjWordSearchBox;
 class ObjGameClock;
+class TextInputHandler;
 
 enum WordSearchState
 {
@@ -20,6 +21,7 @@ enum WordSearchState
 	WORD_SEARCH_STATE_ROUND_COMPLETED_DELAY,
 	WORD_SEARCH_STATE_ENDING_ROUND,		//Words are going away and giving the player score and time. At the same time, the box will begin to shrink.
 	WORD_SEARCH_STATE_GAME_OVER,
+	WORD_SEARCH_STATE_ENTER_NAME,
 	WORD_SEARCH_STATE_COUNT
 };
 
@@ -61,7 +63,7 @@ class ObjWordSearchController : public RenderableObject
 		/// @return True if all of the words have reached their goal locations.
 		bool moveWordsToGoal();
 
-		void mouseButtonCallback(SDL_Event &e);
+		void keyboardCallback(SDL_Event &e);
 		void boxReadyCallback();
 		void boxDoneShrinkingCallback();
 		void gameClockCompletedCallback();
@@ -83,7 +85,7 @@ class ObjWordSearchController : public RenderableObject
 		//Constants
 		const int NEXT_LEVEL_DELAY = 500;
 		const int END_ROUND_DELAY = 1500;
-		const int RETRY_DELAY = 3000;
+		const int ENTER_NAME_DELAY = 3000;
 
 		//Gui constants
 		const int GUI_TEXT_OFFSET = 4;
@@ -91,12 +93,11 @@ class ObjWordSearchController : public RenderableObject
 		const int GUI_WORDS_OFFSET_X = 0;
 		const int GUI_WORDS_OFFSET_Y = 12;
 		const int GUI_WORDS_SEP_Y = 6;
-		const int RETRY_TEXT_Y_OFFSET = 32;
+		const int NAME_TEXT_Y_OFFSET = 32;
 
 		const float WORD_MOVE_LERP_RATE = 0.2;
 		const float WORD_ALPHA_LERP_RATE = 0.2;
 		const int WORD_MOVE_MIN_Y_DISTANCE = 1;
-		//const int WORD_ROSE_SPAWN_X_OFFSET = 8;
 
 		const std::string LEVEL_TEXT = "LEVEL: ";
 		const std::string DIF_TEXT = "DIF: ";
@@ -135,6 +136,9 @@ class ObjWordSearchController : public RenderableObject
 		const int SMALL_ROSE_SCORE = 1;
 		const int WORD_COMPLETED_SCORE_ADD = 100;
 		const int SCORE_DELTA_ADD = 500;	//Score to add per second
+							
+		//Input handler constants
+		const int MAX_NAME_LENGTH = 6;
 
 		std::unordered_map<unsigned int, std::vector<std::string>> words;	//Maps character count to a list of words containing that many characters
 		std::vector<bool> wordsFound;
@@ -146,13 +150,13 @@ class ObjWordSearchController : public RenderableObject
 
 		int nextLevelDelay;
 		int endRoundDelay;
-		int retryDelay;
-		bool canRetry;
+		int enterNameDelay;
 
 		BitmapFont *font;
 		BitmapFont *fontSmall;
 		ObjWordSearchBox *wordSearchBox;
 		ObjGameClock *gameClock;
+		TextInputHandler *textInputHandler;
 
 		int difYOffset;
 		int scoreYOffset;
@@ -167,7 +171,7 @@ class ObjWordSearchController : public RenderableObject
 		int wordCountMin;
 		int wordCountMax;
 
-		uint32_t mouseButtonDownEventListenerId;
+		uint32_t keyboardEventListenerId;
 };
 
 #endif

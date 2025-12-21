@@ -9,6 +9,8 @@
 #include "config.hpp"
 #include "random.hpp"
 #include "utility.hpp"
+#include "textInputHandler.hpp"
+#include "scoreTable.hpp"
 #include <stdexcept>
 #include <filesystem>
 #include <fstream>
@@ -16,8 +18,15 @@
 
 ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, double x, double y) : RenderableObject("objWordSearchController", gameManager, x, y)
 {
+	textInputHandler = new TextInputHandler(gameManager, "", MAX_NAME_LENGTH);
+
+	//Input callbacks
+	keyboardEventListenerId = gameManager->getEventDispatcher()->addSDLListener(SDL_EVENT_KEY_DOWN, std::bind(&ObjWordSearchController::keyboardCallback, this, std::placeholders::_1));
+
+	//Load our master words file
 	loadWords(Config::WORDS_PATH);
 
+	//Fonts
 	font = gameManager->getAssetManager()->getBitmap("sitka");
 	//font = gameManager->getAssetManager()->getBitmap("newsGothic");
 	//font = gameManager->getAssetManager()->getBitmap("fntOpenSans");
@@ -37,8 +46,6 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	wordsHeaderYOffset = scoreYOffset + font->getTextHeight(SCORE_TEXT) + GUI_TEXT_SEP_Y;
 	wordsYOffset = wordsHeaderYOffset + font->getTextHeight(WORDS_TEXT) + GUI_WORDS_OFFSET_Y;
 
-	//Input callbacks
-	mouseButtonDownEventListenerId = gameManager->getEventDispatcher()->addSDLListener(SDL_EVENT_MOUSE_BUTTON_DOWN, std::bind(&ObjWordSearchController::mouseButtonCallback, this, std::placeholders::_1));
 	
 	//Create objects
 	wordSearchBox = gameManager->createObject<ObjWordSearchBox>("objWordSearchBox", 480, 270);
@@ -68,7 +75,9 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 
 ObjWordSearchController::~ObjWordSearchController()
 {
-	gameManager->getEventDispatcher()->removeSDLListener(mouseButtonDownEventListenerId);
+	gameManager->getEventDispatcher()->removeSDLListener(keyboardEventListenerId);
+
+	delete textInputHandler;
 }
 
 void ObjWordSearchController::update(double deltaTime)
@@ -173,16 +182,18 @@ void ObjWordSearchController::update(double deltaTime)
 		
 		case WordSearchState::WORD_SEARCH_STATE_GAME_OVER:
 		{
-			//Once retry delay is 0, player will retry using the mouse button callback
-			if (!canRetry)
-			{
-				retryDelay -= deltaTime * 1000;
+			enterNameDelay -= deltaTime * 1000;
 
-				if (retryDelay <= 0.0)
-				{
-					canRetry = true;
-				}
+			if (enterNameDelay <= 0.0)
+			{
+				textInputHandler->startGettingTextInput();
+				state = WordSearchState::WORD_SEARCH_STATE_ENTER_NAME;
 			}
+		}
+		break;
+
+		case WordSearchState::WORD_SEARCH_STATE_ENTER_NAME:
+		{
 		}
 		break;
 	}
@@ -193,12 +204,15 @@ void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 	std::string text = "";
 	int drawX, drawY;
 
-	if (state == WordSearchState::WORD_SEARCH_STATE_GAME_OVER && canRetry)
+	if (state == WordSearchState::WORD_SEARCH_STATE_ENTER_NAME)
 	{
 		drawX = Config::SCREEN_WIDTH / 2;
-		drawY = RETRY_TEXT_Y_OFFSET;
+		drawY = NAME_TEXT_Y_OFFSET;
 
-		font->drawTextOutlined(renderer, drawX, drawY, "PRESS LEFT MOUSE BUTTON TO RETRY", {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::CENTER, TextAlign::TOP);
+		font->drawTextOutlined(renderer, drawX, drawY, "ENTER YOUR NAME", {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::CENTER, TextAlign::TOP);
+
+		drawY = Config::SCREEN_HEIGHT / 2;
+		font->drawTextOutlined(renderer, drawX, drawY, textInputHandler->getText(), {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::CENTER, TextAlign::TOP);
 	}
 
 	drawX = GUI_TEXT_OFFSET;
@@ -468,13 +482,46 @@ bool ObjWordSearchController::moveWordsToGoal()
 	return allWordsReachedGoal;
 }
 
-void ObjWordSearchController::mouseButtonCallback(SDL_Event &e)
+void ObjWordSearchController::keyboardCallback(SDL_Event &e)
 {
-	if (state != WordSearchState::WORD_SEARCH_STATE_GAME_OVER) return;
+	if (state != WordSearchState::WORD_SEARCH_STATE_ENTER_NAME) return;
+	if (e.key.type != SDL_EVENT_KEY_DOWN || e.key.repeat > 0) return;
 
-	if (e.button.button == SDL_BUTTON_LEFT && canRetry)
+	if (e.key.key == SDLK_RETURN)
 	{
-		gameManager->setRoomToLoad("titleScreen");
+		std::string name;
+		std::vector<std::pair<std::string, int>> scoreTable;
+		bool found = false;
+
+		name = textInputHandler->getText();
+
+		//Don't allow the player to enter a empty name
+		if (name == "")
+		{
+			return;
+		}
+
+		//Save this players score
+		scoreTable = ScoreTable::readPlayerScoreTable();
+
+		for (int i = 0; i < scoreTable.size(); i++)
+		{
+			if (scoreTable[i].first == name)
+			{
+				scoreTable[i].second = SDL_max(score, scoreTable[i].second);	//Only update if our new score is higher
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			scoreTable.push_back({name, score});	
+		}
+
+		ScoreTable::savePlayerScoreTable(scoreTable);
+
+		gameManager->setRoomToLoad("leaderboard");
 	}
 }
 
@@ -493,8 +540,7 @@ void ObjWordSearchController::gameClockCompletedCallback()
 	wordSearchBox->gameOver();
 	gameManager->getAudioController()->playMusic("gameOver");
 	
-	retryDelay = RETRY_DELAY;
-	canRetry = false;
+	enterNameDelay = ENTER_NAME_DELAY;
 
 	state = WordSearchState::WORD_SEARCH_STATE_GAME_OVER;
 }

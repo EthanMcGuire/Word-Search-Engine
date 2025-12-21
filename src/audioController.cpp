@@ -82,12 +82,18 @@ bool AudioController::update()
 
 #pragma region Playback
 
-/// @brief Plays the given music. If music is already playing, it cancels that audio stream and replaces it with this one. The music will automatically loop through the update event.
+/// @brief Plays the given music. If music is already playing, nothing happens. The music will automatically loop through the update event.
 /// @param soundName The name of the music to play.
 /// @return True on success, false on failure.
 bool AudioController::playMusic(std::string soundName)
 {
     soundName = stringToLower(soundName);
+
+    if (currentMusic == soundName)
+    {
+	    //Already playing
+	    return true;
+    }
 
     if (musics.find(soundName) == musics.end())
     {

@@ -8,6 +8,7 @@
 #include "objTitleScreen.hpp"
 #include "objWordSearchController.hpp"
 #include "objWordSearchBox.hpp"
+#include "objLeaderboard.hpp"
 #include "objRose.hpp"
 
 Object* ObjectFactory::createObject(GameManager *gameManager, std::string objectName, double x, double y, std::vector<ParameterVariant> args)
@@ -39,6 +40,10 @@ Object* ObjectFactory::createObject(GameManager *gameManager, std::string object
     else if (objectName == "objwordsearchbox")
     {
 	    return new ObjWordSearchBox(gameManager, x, y);
+    }
+    else if (objectName == "objleaderboard")
+    {
+	    return new ObjLeaderboard(gameManager, x, y);
     }
     else if (objectName == "objrose")
     {

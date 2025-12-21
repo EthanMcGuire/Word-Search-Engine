@@ -45,6 +45,9 @@ target_sources(MyProgram
 	src/nineSlice.cpp
 	src/drawingSurface.cpp
 	src/objRose.cpp
+	src/objLeaderboard.cpp
+	src/textInputHandler.cpp
+	src/scoreTable.cpp
 )
 
 # Copy assets to build directory
