@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.23)
 
-project(MyProgram)
+project(Game)
 
-add_executable(MyProgram)
+add_executable(Game)
 
-target_include_directories(MyProgram PRIVATE include/engine)
-target_include_directories(MyProgram PRIVATE include/external)
+target_include_directories(Game PRIVATE include/engine)
+target_include_directories(Game PRIVATE include/external)
 
-target_sources(MyProgram
+target_sources(Game
     PRIVATE
         src/main.cpp
         src/engine.cpp
@@ -65,4 +65,4 @@ endif()
 find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
 find_package(SDL3_ttf REQUIRED)
-target_link_libraries(MyProgram SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf SDL3::SDL3)
+target_link_libraries(Game SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf SDL3::SDL3)

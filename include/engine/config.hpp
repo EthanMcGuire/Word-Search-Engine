@@ -8,7 +8,7 @@
 
 namespace Config
 {
-    static const char* GAME_TITLE = "Test Game";
+    static const char* GAME_TITLE = "Word Search";
     static const char* GAME_VERSION = "1.0";
     //static const char* STARTING_ROOM = "default";
     static const char* STARTING_ROOM = "titlescreen";
