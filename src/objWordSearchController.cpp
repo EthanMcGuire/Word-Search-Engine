@@ -169,7 +169,7 @@ void ObjWordSearchController::update(double deltaTime)
 					createRoses(spawnX, spawnY, WORD_COMPLETED_SCORE_ADD);
 					
 					//Remove word
-					currentWords.erase(currentWords.begin() + 1);
+					currentWords.erase(currentWords.begin() + i);
 				}	
 			}
 
@@ -179,7 +179,7 @@ void ObjWordSearchController::update(double deltaTime)
 			}
 		}
 		break;
-		
+	
 		case WordSearchState::WORD_SEARCH_STATE_GAME_OVER:
 		{
 			enterNameDelay -= deltaTime * 1000;

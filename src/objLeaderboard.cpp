@@ -20,6 +20,12 @@ ObjLeaderboard::ObjLeaderboard(GameManager* gameManager, double x, double y) : R
 	mouseEventListenerId = gameManager->getEventDispatcher()->addSDLListener(SDL_EVENT_MOUSE_BUTTON_DOWN, [this](SDL_Event &e) {
 		this->mouseCallback(e);
 	});
+
+	scoreTable = ScoreTable::readPlayerScoreTable();
+	std::sort(scoreTable.begin(), scoreTable.end(), [](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) {
+			return a.second > b.second;	
+		});
+
 }
 
 ObjLeaderboard::~ObjLeaderboard()
@@ -32,8 +38,7 @@ void ObjLeaderboard::renderGui(SDL_Renderer *renderer)
 	int drawX, drawY;
 	int textW, textH;
 	std::string text;
-	std::vector<std::pair<std::string, int>> scoreTable;
-
+	
 	drawX = Config::SCREEN_WIDTH / 2;
 	drawY = BUTTON_TEXT_Y_OFFSET;
 
@@ -47,12 +52,7 @@ void ObjLeaderboard::renderGui(SDL_Renderer *renderer)
 	font->drawTextOutlined(renderer, drawX, drawY, text, {130, 200, 229, 255}, {0, 0, 0, 255}, TextAlign::CENTER, TextAlign::CENTER);
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderLine(renderer, drawX - textW / 2, drawY + 2 + textH / 2, drawX + textW / 2, drawY + 2 + textH / 2);
-
-	scoreTable = ScoreTable::readPlayerScoreTable();
-	std::sort(scoreTable.begin(), scoreTable.end(), [](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) {
-			return a.second > b.second;	
-		});
-
+	
 	drawY = LEADERBOARD_Y_OFFSET + LEADERBOARD_TEXT_Y_OFFSET;
 
 	for (int i = 0; i < scoreTable.size() && i < 10; i++)

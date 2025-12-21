@@ -2,6 +2,8 @@
 #define OBJ_LEADERBOARD_H
 
 #include "renderableObject.hpp"
+#include <string>
+#include <vector>
 
 class GameManager;
 class BitmapFont;
@@ -26,6 +28,7 @@ class ObjLeaderboard : public RenderableObject
 
 		BitmapFont *font;
 		uint32_t mouseEventListenerId;
+		std::vector<std::pair<std::string, int>> scoreTable;
 };
 
 #endif

@@ -346,8 +346,12 @@ void GameManager::keyboardCallback(SDL_Event &e)
 
 		case SDLK_RETURN:
 		{
-			if (e.key.mod == SDL_KMOD_LALT || e.key.mod == SDL_KMOD_RALT)
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "GameManager: Hit enter.");
+
+			if (e.key.mod & SDL_KMOD_LALT || e.key.mod & SDL_KMOD_RALT)
 			{
+                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "GameManager: Hit fullscreen button.");
+
 				fullscreen = !fullscreen;
 
 				SDL_SetWindowFullscreen(getWindow(), fullscreen);
@@ -357,7 +361,7 @@ void GameManager::keyboardCallback(SDL_Event &e)
 		
 		case SDLK_F4:
 		{
-			if (e.key.mod == SDL_KMOD_LALT || e.key.mod == SDL_KMOD_RALT)
+			if (e.key.mod & SDL_KMOD_LALT || e.key.mod & SDL_KMOD_RALT)
 			{
 				endGame();
 			}

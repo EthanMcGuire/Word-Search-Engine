@@ -83,13 +83,13 @@ void TextInputHandler::keyboardCallback(SDL_Event &e)
     }
 
     //Copy
-    else if (e.key.key == SDLK_C && e.key.mod == SDL_KMOD_CTRL)
+    else if (e.key.key & SDLK_C && e.key.mod & SDL_KMOD_CTRL)
     {
         SDL_SetClipboardText(inputText.c_str());
     }
 
     //Paste
-    else if (e.key.key == SDLK_V && e.key.mod == SDL_KMOD_CTRL)
+    else if (e.key.key & SDLK_V && e.key.mod & SDL_KMOD_CTRL)
     {
         char* pasteText = SDL_GetClipboardText();
 
