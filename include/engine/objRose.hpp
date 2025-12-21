@@ -35,9 +35,11 @@ class ObjRose : public RenderableObject
 
 	private:
 		const int ROSE_SPEED = 416;
-		const int START_SPREAD_DISTANCE = 16;	//Distance the rose moves before moving towards its goal
+		const int MIN_SPAWN_SPEED = 64;
+		const int MAX_SPAWN_SPEED = 128;
+		const int START_SPREAD_DISTANCE = 24;	//Distance the rose moves before moving towards its goal
 		static const constexpr double VELOCITY_LERP_RATE = 0.05;
-		static const constexpr double GOAL_LOCATION_RANGE = 16;	//Distance to goal location needed before being collected
+		static const constexpr double GOAL_LOCATION_RANGE = 4;	//Distance to goal location needed before being collected
 
 		Texture *roseTexture = NULL;
 		RoseState state = RoseState::ROSE_STATE_START;
@@ -46,6 +48,7 @@ class ObjRose : public RenderableObject
 		gmtl::Vec2d goal;
 		gmtl::Vec2d moveVector;
 		
+		int spawnSpeed;
 		double spawnDirection;
 		double remainingSpreadDistance = START_SPREAD_DISTANCE;
 

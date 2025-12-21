@@ -3,6 +3,7 @@
 #include "texture.hpp"
 #include "assetManager.hpp"
 #include "audioController.hpp"
+#include "random.hpp"
 #include <stdexcept>
 
 ObjRose::ObjRose(GameManager *gameManager, double x, double y, double goalX, double goalY, double spawnDirection, int score) : RenderableObject("ObjRose", gameManager, x, y)
@@ -13,6 +14,8 @@ ObjRose::ObjRose(GameManager *gameManager, double x, double y, double goalX, dou
 	moveVector = gmtl::Vec2d(0.0, 0.0);
 	this->spawnDirection = spawnDirection;
 	this->score = score;
+
+	spawnSpeed = gameManager->getRandom()->getRandomInt(MIN_SPAWN_SPEED, MAX_SPAWN_SPEED);
 
 	setRoseSize(RoseSize::ROSE_SIZE_SMALL);
 }
@@ -28,9 +31,10 @@ void ObjRose::update(double deltaTime)
 
 		desiredMoveVector = goalLocation - pos;
 		gmtl::normalize(desiredMoveVector);
-		desiredMoveVector *= ROSE_SPEED;
+		desiredMoveVector *= spawnSpeed;
 
-		gmtl::lerp(moveVector, VELOCITY_LERP_RATE, moveVector, desiredMoveVector);
+		moveVector = desiredMoveVector;
+		//gmtl::lerp(moveVector, VELOCITY_LERP_RATE_SPAWN, moveVector, desiredMoveVector);
 
 		pos += moveVector * deltaTime;
 

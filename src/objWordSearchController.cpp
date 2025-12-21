@@ -5,6 +5,7 @@
 #include "gameManager.hpp"
 #include "objWordSearchBox.hpp"
 #include "objGameClock.hpp"
+#include "eventDispatcher.hpp"
 #include "config.hpp"
 #include "random.hpp"
 #include "utility.hpp"
@@ -35,6 +36,9 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	scoreYOffset = difYOffset + font->getTextHeight(DIF_TEXT) + GUI_TEXT_SEP_Y; 
 	wordsHeaderYOffset = scoreYOffset + font->getTextHeight(SCORE_TEXT) + GUI_TEXT_SEP_Y;
 	wordsYOffset = wordsHeaderYOffset + font->getTextHeight(WORDS_TEXT) + GUI_WORDS_OFFSET_Y;
+
+	//Input callbacks
+	mouseButtonDownEventListenerId = gameManager->getEventDispatcher()->addSDLListener(SDL_EVENT_MOUSE_BUTTON_DOWN, std::bind(&ObjWordSearchController::mouseButtonCallback, this, std::placeholders::_1));
 	
 	//Create objects
 	wordSearchBox = gameManager->createObject<ObjWordSearchBox>("objWordSearchBox", 480, 270);
@@ -60,6 +64,11 @@ ObjWordSearchController::ObjWordSearchController(GameManager *gameManager, doubl
 	//Start the game
 	resetGameData();	
 	beginNextLevelDelay();
+}
+
+ObjWordSearchController::~ObjWordSearchController()
+{
+	gameManager->getEventDispatcher()->removeSDLListener(mouseButtonDownEventListenerId);
 }
 
 void ObjWordSearchController::update(double deltaTime)
@@ -142,8 +151,13 @@ void ObjWordSearchController::update(double deltaTime)
 			{
 				if (SDL_abs(currentWords[i].y - currentWords[i].goalY) <= SDL_FLT_EPSILON)
 				{
+					int spawnX, spawnY;
+
+					spawnX = GUI_TEXT_OFFSET + font->getTextWidth(SCORE_TEXT) / 2.0;
+					spawnY = scoreYOffset + font->getTextHeight(SCORE_TEXT) / 2.0;
+
 					//Add score
-					createRoses(currentWords[i].x + currentWords[i].width / 2.0 + WORD_ROSE_SPAWN_X_OFFSET, currentWords[i].y + currentWords[i].height / 2.0, WORD_COMPLETED_SCORE_ADD);
+					createRoses(spawnX, spawnY, WORD_COMPLETED_SCORE_ADD);
 					
 					//Remove word
 					currentWords.erase(currentWords.begin() + 1);
@@ -159,10 +173,16 @@ void ObjWordSearchController::update(double deltaTime)
 		
 		case WordSearchState::WORD_SEARCH_STATE_GAME_OVER:
 		{
-			//Wait for player to retry
-			//Upon retry:
-			//resetGameData();	
-			//startNextLevel();
+			//Once retry delay is 0, player will retry using the mouse button callback
+			if (!canRetry)
+			{
+				retryDelay -= deltaTime * 1000;
+
+				if (retryDelay <= 0.0)
+				{
+					canRetry = true;
+				}
+			}
 		}
 		break;
 	}
@@ -172,6 +192,14 @@ void ObjWordSearchController::renderGui(SDL_Renderer *renderer)
 {
 	std::string text = "";
 	int drawX, drawY;
+
+	if (state == WordSearchState::WORD_SEARCH_STATE_GAME_OVER && canRetry)
+	{
+		drawX = Config::SCREEN_WIDTH / 2;
+		drawY = RETRY_TEXT_Y_OFFSET;
+
+		font->drawTextOutlined(renderer, drawX, drawY, "PRESS LEFT MOUSE BUTTON TO RETRY", {255, 255, 255, 255}, {0, 0, 0, 255}, TextAlign::CENTER, TextAlign::TOP);
+	}
 
 	drawX = GUI_TEXT_OFFSET;
 	drawY = GUI_TEXT_OFFSET;
@@ -440,6 +468,16 @@ bool ObjWordSearchController::moveWordsToGoal()
 	return allWordsReachedGoal;
 }
 
+void ObjWordSearchController::mouseButtonCallback(SDL_Event &e)
+{
+	if (state != WordSearchState::WORD_SEARCH_STATE_GAME_OVER) return;
+
+	if (e.button.button == SDL_BUTTON_LEFT && canRetry)
+	{
+		gameManager->setRoomToLoad("titleScreen");
+	}
+}
+
 void ObjWordSearchController::boxReadyCallback()
 {
 	boxReady = true;
@@ -452,13 +490,13 @@ void ObjWordSearchController::boxDoneShrinkingCallback()
 
 void ObjWordSearchController::gameClockCompletedCallback()
 {
-	//TODO
-	//Start game over sequence
-	state = WordSearchState::WORD_SEARCH_STATE_GAME_OVER;
-
 	wordSearchBox->gameOver();
-
 	gameManager->getAudioController()->playMusic("gameOver");
+	
+	retryDelay = RETRY_DELAY;
+	canRetry = false;
+
+	state = WordSearchState::WORD_SEARCH_STATE_GAME_OVER;
 }
 
 void ObjWordSearchController::gameClockHitLowTimeCallback()
@@ -558,16 +596,8 @@ void ObjWordSearchController::createRoses(double x, double y, float scoreToAdd)
 	Random *random;
 	float multiplier = 1;
 	int remainingScoreToAdd;
-	double direction;
-	int directionChange = 1;
 
 	random = gameManager->getRandom();
-	direction = random->getRandomInt(0, 359);
-
-	if (random->getRandomInt(0, 1) == 0)
-	{
-		directionChange = -1;
-	}
 
 	//Apply difficulty bonus
 	multiplier += (difficulty - 1) * DIFFICULTY_MULTIPLIER;
@@ -577,7 +607,7 @@ void ObjWordSearchController::createRoses(double x, double y, float scoreToAdd)
 	{
 		RoseSize size;
 		int nextScore;
-		double roseX, roseY;
+		double direction;
 
 		if (remainingScoreToAdd >= LARGE_ROSE_SCORE)
 		{
@@ -597,12 +627,9 @@ void ObjWordSearchController::createRoses(double x, double y, float scoreToAdd)
 
 		remainingScoreToAdd -= nextScore;
 
-		roseX = x + random->getRandomInt(-ROSE_CREATION_RANGE, ROSE_CREATION_RANGE);
-		roseY = y + random->getRandomInt(-ROSE_CREATION_RANGE, ROSE_CREATION_RANGE);
+		direction = random->getRandomInt(0, 359);
 
-		createRose(roseX, roseY, size, (SDL_PI_D / 180.0) * direction, nextScore);
-
-		direction += random->getRandomInt(0, 45) * directionChange;
+		createRose(x, y, size, (SDL_PI_D / 180.0) * direction, nextScore);
 	}
 }
 

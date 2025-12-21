@@ -88,6 +88,7 @@ class ObjWordSearchBox : public RenderableObject
 		const int MARGIN_PIXELS = 2;	//Margin in pixels letters will be from the border of the box
 		const int MAX_WORD_PLACE_ATTEMPTS = 50;	//Number of times we will attempt to place a word with a given direction
 		const int MAX_WORD_ADD_ATTEMPTS = 10;	//Number of times we will attempt to add a word
+		const int BOX_MOVE_SPEED = 64;	//Move speed when moving out of the screen at game over
 
 		BitmapFont *font;
 		NineSlice *box;

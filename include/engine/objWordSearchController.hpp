@@ -38,6 +38,7 @@ class ObjWordSearchController : public RenderableObject
 {
 	public:
 		ObjWordSearchController(GameManager *gameManager, double x, double y);
+		~ObjWordSearchController();
 
 		void update(double deltaTime) override;
 		void renderGui(SDL_Renderer *renderer) override;
@@ -60,6 +61,7 @@ class ObjWordSearchController : public RenderableObject
 		/// @return True if all of the words have reached their goal locations.
 		bool moveWordsToGoal();
 
+		void mouseButtonCallback(SDL_Event &e);
 		void boxReadyCallback();
 		void boxDoneShrinkingCallback();
 		void gameClockCompletedCallback();
@@ -81,6 +83,7 @@ class ObjWordSearchController : public RenderableObject
 		//Constants
 		const int NEXT_LEVEL_DELAY = 500;
 		const int END_ROUND_DELAY = 1500;
+		const int RETRY_DELAY = 3000;
 
 		//Gui constants
 		const int GUI_TEXT_OFFSET = 4;
@@ -88,11 +91,12 @@ class ObjWordSearchController : public RenderableObject
 		const int GUI_WORDS_OFFSET_X = 0;
 		const int GUI_WORDS_OFFSET_Y = 12;
 		const int GUI_WORDS_SEP_Y = 6;
+		const int RETRY_TEXT_Y_OFFSET = 32;
 
 		const float WORD_MOVE_LERP_RATE = 0.2;
 		const float WORD_ALPHA_LERP_RATE = 0.2;
 		const int WORD_MOVE_MIN_Y_DISTANCE = 1;
-		const int WORD_ROSE_SPAWN_X_OFFSET = 8;
+		//const int WORD_ROSE_SPAWN_X_OFFSET = 8;
 
 		const std::string LEVEL_TEXT = "LEVEL: ";
 		const std::string DIF_TEXT = "DIF: ";
@@ -126,7 +130,6 @@ class ObjWordSearchController : public RenderableObject
 		//Score constants
 		const float DIFFICULTY_MULTIPLIER = 0.1;	//Score multiplier added based on difficulty (only if difficulty is above 1)
 		const float WORD_BONUS_MULTIPLIER = 0.25;	//Score multiplier added based on the number of words found at once (every extra word is what adds the bonus. So 2 words gets +0.25 multiplier)
-		const int ROSE_CREATION_RANGE = 32;
 		const int LARGE_ROSE_SCORE = 50;
 		const int MEDIUM_ROSE_SCORE = 5;
 		const int SMALL_ROSE_SCORE = 1;
@@ -140,8 +143,11 @@ class ObjWordSearchController : public RenderableObject
 
 		bool boxReady;
 		bool boxShrunk;
+
 		int nextLevelDelay;
 		int endRoundDelay;
+		int retryDelay;
+		bool canRetry;
 
 		BitmapFont *font;
 		BitmapFont *fontSmall;
@@ -160,6 +166,8 @@ class ObjWordSearchController : public RenderableObject
 		int gridSize;
 		int wordCountMin;
 		int wordCountMax;
+
+		uint32_t mouseButtonDownEventListenerId;
 };
 
 #endif

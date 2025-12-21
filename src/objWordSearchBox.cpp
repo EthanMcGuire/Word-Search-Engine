@@ -131,7 +131,13 @@ void ObjWordSearchBox::update(double deltaTime)
 
 		case BoxState::BOX_STATE_GAME_OVER:
 		{
-			//Waiting to be initialized again
+			//Go out of the screen
+			if (pos[1] < 2000)
+			{
+				pos[1] += BOX_MOVE_SPEED * deltaTime;
+				pos[1] = SDL_round(pos[1]);
+				updateLetterPositions();
+			}
 		}
 		break;
 	}
